@@ -1,0 +1,234 @@
+- step:
+    name: load_case_to_account
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.load_data_from_redshift("case_to_account.sql")'
+
+- step:
+    name: load_data_tasks
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/Task\/Upload\/\"')'
+
+- step:
+    name: load_data_sessions
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/TechnicalInfo\/Upload\/\"')'
+
+- step:
+    name: load_data_tasks_daily
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/Task\/Upload\/\",with_date_filter="1"')'
+
+- step:
+    name: load_data_sessions_daily
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/TechnicalInfo\/Upload\/\",with_date_filter="1"')'
+
+- step:
+    name: load_data_emails_daily
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/EmailMessage\/Upload\/\",with_date_filter="1"')'
+
+- step:
+    name: aggregate_tasks
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.aggregate_tasks()'
+    inputs:
+      - name: tasks
+        default: datum://017b25a6-a638-3d8c-2758-67abee4f1be4
+
+- step:
+    name: aggregate_sessions
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.aggregate_sessions()'
+    inputs:
+      - name: sessions
+        default: datum://017b2574-47d9-81f5-8179-07a28c2e0279
+
+- step:
+    name: aggregate_emails
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.aggregate_emails()'
+    inputs:
+      - name: case_to_account
+        default: datum://017b25c4-f56e-31f7-af18-231ca19c32f7
+      - name: emails
+        default: datum://017b2608-8022-dff2-29b9-8bfd77c0622f
+
+- step:
+    name: load_and_aggregate_emails
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.load_and_aggregate_emails()'
+    inputs:
+      - name: case_to_account
+        default: datum://017b25c4-f56e-31f7-af18-231ca19c32f7
+
+
+
+- step:
+    name: concat_all
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.concat_all()'
+    inputs:
+      - name: tasks
+        default: datum://017b2658-979c-54e6-2052-97aebd7f0534
+      - name: emails
+        default: datum://017b2614-ef3e-2f18-56d6-40181d374d72
+      - name: sessions
+        default: datum://017b259a-9975-b67e-c94f-d7a6d4abc903
+
+- step:
+    name: upload_to_redshift
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.upload_to_redshift("simple_intent_alltime")'
+    inputs:
+      - name: final
+        default: datum://017b2770-cfe0-e51c-37e1-2931e066483a
+
+- step:
+    name: upload_to_s3
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.upload_to_s3()'
+    inputs:
+      - name: data_with_predictions
+        default: datum://<DATUM_URL_FROM_STEP_EXECUTION>
+
+
+- pipeline:
+    name: simple_intent_alltime
+    nodes:
+      - name: load_case_to_account
+        type: execution
+        step: load_case_to_account
+      - name: load_data_tasks
+        type: execution
+        step: load_data_tasks
+      - name: load_data_sessions
+        type: execution
+        step: load_data_sessions
+      - name: load_and_aggregate_emails
+        type: execution
+        step: load_and_aggregate_emails
+        override:
+          inputs:
+            - name: case_to_account
+      - name: aggregate_sessions
+        type: execution
+        step: aggregate_sessions
+        override:
+          inputs:
+            - name: sessions
+      - name: aggregate_tasks
+        type: execution
+        step: aggregate_tasks
+        override:
+          inputs:
+            - name: tasks
+      - name: concat_all
+        type: execution
+        step: concat_all
+        override:
+          inputs:
+            - name: emails
+            - name: sessions
+            - name: tasks
+      - name: upload_to_redshift
+        type: execution
+        step: upload_to_redshift
+        override:
+          inputs:
+            - name: final
+    edges:
+      - [load_case_to_account.output.*.csv, load_and_aggregate_emails.inputs.case_to_account]
+      - [load_data_tasks.output.*.csv, aggregate_tasks.inputs.tasks]
+      - [load_data_sessions.output.*.csv, aggregate_sessions.inputs.sessions]
+      - [load_and_aggregate_emails.output.*.csv, concat_all.inputs.emails]
+      - [aggregate_tasks.output.*.csv, concat_all.inputs.tasks]
+      - [aggregate_sessions.output.*.csv, concat_all.inputs.sessions]
+      - [concat_all.output.*.csv, upload_to_redshift.inputs.final]
+
+
+- pipeline:
+    name: simple_intent_daily
+    nodes:
+      - name: load_case_to_account
+        type: execution
+        step: load_case_to_account
+      - name: load_data_tasks_daily
+        type: execution
+        step: load_data_tasks_daily
+      - name: load_data_sessions_daily
+        type: execution
+        step: load_data_sessions_daily
+      - name: load_data_emails_daily
+        type: execution
+        step: load_data_emails_daily
+      - name: aggregate_emails
+        type: execution
+        step: aggregate_emails
+        override:
+          inputs:
+            - name: emails
+            - name: case_to_account
+      - name: aggregate_sessions
+        type: execution
+        step: aggregate_sessions
+        override:
+          inputs:
+            - name: sessions
+      - name: aggregate_tasks
+        type: execution
+        step: aggregate_tasks
+        override:
+          inputs:
+            - name: tasks
+      - name: concat_all
+        type: execution
+        step: concat_all
+        override:
+          inputs:
+            - name: emails
+            - name: sessions
+            - name: tasks
+      - name: upload_to_redshift
+        type: execution
+        step: upload_to_redshift
+        override:
+          inputs:
+            - name: final
+    edges:
+      - [load_case_to_account.output.*.csv, aggregate_emails.inputs.case_to_account]
+      - [load_data_emails_daily.output.*.csv, aggregate_emails.inputs.emails]
+      - [load_data_tasks_daily.output.*.csv, aggregate_tasks.inputs.tasks]
+      - [load_data_sessions_daily.output.*.csv, aggregate_sessions.inputs.sessions]
+      - [aggregate_emails.output.*.csv, concat_all.inputs.emails]
+      - [aggregate_tasks.output.*.csv, concat_all.inputs.tasks]
+      - [aggregate_sessions.output.*.csv, concat_all.inputs.sessions]
+      - [concat_all.output.*.csv, upload_to_redshift.inputs.final]
+
+
