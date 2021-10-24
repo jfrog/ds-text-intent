@@ -40,7 +40,7 @@ def load_data_s3(source_folder, yesterday=False):
     # file_name_for_save = folder_name.split('/')[-3]
     total_df = None
     if yesterday:
-        yesterday = datetime.utcnow().date() - timedelta(days=1)
+        yesterday = datetime.utcnow().date() - timedelta(days=2)
         year = str(yesterday.year)
         month = str(yesterday.month)
         day = str(yesterday.day)
