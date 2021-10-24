@@ -46,6 +46,7 @@ def load_data_s3(source_folder, yesterday=False):
         day = str(yesterday.day)
         full_folder = source_folder + '/' + year + '/' + month + '/' + day
         object_name = None
+        print(full_folder)
         for file in your_bucket.objects.all():
             if full_folder in file.key:
                 object_name = file.key
