@@ -54,7 +54,8 @@ def load_data_s3(source_folder, yesterday=False):
         if not object_name:
             print("Folder for the date " + str(yesterday) + " does not exist!")
         else:
-            object_name.download_file(OUTPUT_PATH + '/loaded_source.csv')
+            object = your_bucket.Object(object_name)
+            object.download_file(OUTPUT_PATH + '/loaded_source.csv')
             total_df = pd.read_csv(OUTPUT_PATH + '/loaded_source.csv', error_bad_lines=False)
 
     else:
