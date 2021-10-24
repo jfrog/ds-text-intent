@@ -44,7 +44,7 @@ def load_data_s3(source_folder, yesterday=False):
         year = str(yesterday.year)
         month = str(yesterday.month)
         day = str(yesterday.day)
-        full_folder = source_folder + '/' + year + '/' + month + '/' + day
+        full_folder = source_folder + year + '/' + month + '/' + day
         object_name = None
         print(full_folder)
         for file in your_bucket.objects.all():
