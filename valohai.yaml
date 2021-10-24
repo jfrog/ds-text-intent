@@ -6,39 +6,49 @@
       - python -c 'import main; main.load_data_from_redshift("case_to_account.sql")'
 
 - step:
+    name: load_and_aggregate_emails
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.load_and_aggregate_emails()'
+    inputs:
+      - name: case_to_account
+        default: datum://017b25c4-f56e-31f7-af18-231ca19c32f7
+
+- step:
     name: load_data_tasks
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/Task\/Upload\/\"')'
+      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/Salesforce\/Task\/\"')'
 
 - step:
     name: load_data_sessions
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/TechnicalInfo\/Upload\/\"')'
+      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/Salesforce\/TechnicalInfo\/\"')'
 
 - step:
     name: load_data_tasks_daily
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/Task\/Upload\/\",with_date_filter="1"')'
+      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/Salesforce\/Task\/\",yesterday="1"')'
 
 - step:
     name: load_data_sessions_daily
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/TechnicalInfo\/Upload\/\",with_date_filter="1"')'
+      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/Salesforce\/TechnicalInfo\/\",yesterday="1"')'
 
 - step:
     name: load_data_emails_daily
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/EmailMessage\/Upload\/\",with_date_filter="1"')'
+      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/Salesforce\/EmailMessage\/\",yesterday="1"')'
 
 - step:
     name: aggregate_tasks
@@ -71,17 +81,6 @@
         default: datum://017b25c4-f56e-31f7-af18-231ca19c32f7
       - name: emails
         default: datum://017b2608-8022-dff2-29b9-8bfd77c0622f
-
-- step:
-    name: load_and_aggregate_emails
-    image: yotamljfrog/ds-general-image:0.1
-    command:
-      - pip install -r requirements.txt
-      - python -c 'import main; main.load_and_aggregate_emails()'
-    inputs:
-      - name: case_to_account
-        default: datum://017b25c4-f56e-31f7-af18-231ca19c32f7
-
 
 
 - step:

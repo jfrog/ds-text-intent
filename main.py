@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import os
 import shap
 import pandas as pd
@@ -53,9 +53,12 @@ def send_slack_message(message):
         print("Failed to sent message to data-science slack channel. please check the Workato recipe related to this.")
 
 
-def load_data_from_s3(folder_name, with_date_filter=0):
-    date_from = str(date.today()) if with_date_filter == 1 else '2000-01-01'
-    load_data_s3(folder_name, date_from=date_from)
+def load_data_from_s3(folder_name, yesterday=0):
+    yesterday = yesterday == 1
+    load_data_s3(folder_name, yesterday=yesterday)
+
+
+# def load_data_from_s3_all_subfolders(source_folder):
 
 
 def load_data_from_redshift(sql_file_name):
@@ -63,7 +66,7 @@ def load_data_from_redshift(sql_file_name):
 
 
 def load_and_aggregate_emails():
-    emails = load_data_s3("Text_Data/EmailMessage/Upload/")
+    emails = load_data_s3_with_date_filter("Text_Data/EmailMessage/Upload/")
     case_to_account_df = pd.read_csv('/valohai/inputs/case_to_account/case_to_account.csv', delimiter=";")
     payload = []
 

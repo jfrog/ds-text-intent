@@ -7,10 +7,11 @@ import pandas as pd
 import os
 import numpy as np
 import pickle
-from datetime import date
+from datetime import date,datetime,timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
+
 
 def explore_bucket_s3():
     AWS_KEY = os.getenv('AWS_KEY')
@@ -23,9 +24,59 @@ def explore_bucket_s3():
     your_bucket = s3.Bucket('prod-is-data-science-bucket')
     for file in your_bucket.objects.all():
         print(file)
-        
 
-def load_data_s3(folder_name, date_from):
+
+def load_data_s3(source_folder, yesterday=False):
+    AWS_KEY = os.getenv('AWS_KEY')
+    AWS_SECRET = os.getenv('AWS_SECRET')
+    AWS_REGION = os.getenv('AWS_REGION')
+    OUTPUT_PATH = os.getenv('VH_OUTPUTS_DIR')
+    session = Session(aws_access_key_id=AWS_KEY,
+                      aws_secret_access_key=AWS_SECRET,
+                      region_name=AWS_REGION)
+    s3 = session.resource('s3')
+    your_bucket = s3.Bucket('prod-is-data-science-bucket')
+
+    # file_name_for_save = folder_name.split('/')[-3]
+    total_df = None
+    if yesterday:
+        yesterday = datetime.utcnow().date() - timedelta(days=1)
+        year = str(yesterday.year)
+        month = str(yesterday.month)
+        day = str(yesterday.day)
+        full_folder = source_folder + '/' + year + '/' + month + '/' + day
+        object_name = None
+        for file in your_bucket.objects.all():
+            if full_folder in file.key:
+                object_name = file.key
+
+        if not object_name:
+            print("Folder for the date " + str(yesterday) + " does not exist!")
+        else:
+            object_name.download_file(OUTPUT_PATH + '/loaded_source.csv')
+            total_df = pd.read_csv(OUTPUT_PATH + '/loaded_source.csv', error_bad_lines=False)
+
+    else:
+        object_list = []
+
+        for file in your_bucket.objects.all():
+            if source_folder in file.key:
+                object_name = file.key
+                object_list.append(object_name)
+
+        for obj in object_list:
+            curr_obj = your_bucket.Object(obj)
+            curr_obj.download_file(OUTPUT_PATH + '/curr_sheet.csv')
+            curr_df = pd.read_csv(OUTPUT_PATH + '/curr_sheet.csv', error_bad_lines=False)
+            curr_df.to_csv(OUTPUT_PATH + '/curr_sheet.csv', index=False)
+            os.remove(OUTPUT_PATH + '/curr_sheet.csv')
+            total_df = total_df.concat([total_df, curr_df])
+
+    total_df.to_csv(OUTPUT_PATH + '/loaded_source.csv', index=False)
+    return total_df
+
+
+def load_data_s3_with_date_filter(folder_name, date_from):
     AWS_KEY = os.getenv('AWS_KEY')
     AWS_SECRET = os.getenv('AWS_SECRET')
     AWS_REGION = os.getenv('AWS_REGION')
@@ -34,7 +85,7 @@ def load_data_s3(folder_name, date_from):
                       region_name=AWS_REGION)
     s3 = session.resource('s3')
     your_bucket = s3.Bucket('prod-is-data-science-bucket')
-    
+
     file_name_for_save = folder_name.split('/')[-3]
     object_name = ""
     for file in your_bucket.objects.all():
@@ -55,7 +106,6 @@ def load_data_s3(folder_name, date_from):
 
     df.to_csv(OUTPUT_PATH + '/' + file_name_for_save + '.csv', index=False)
     return df
-
 
 
 # - load data from Red Shift
