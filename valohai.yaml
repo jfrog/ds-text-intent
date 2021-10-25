@@ -20,35 +20,35 @@
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/Salesforce\/Task\/\"')'
+      - python -c 'import main; main.load_data_from_s3('\"Data_Science\/Text_Data\/Salesforce\/Task\/\"')'
 
 - step:
     name: load_data_sessions
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/Salesforce\/TechnicalInfo\/\"')'
+      - python -c 'import main; main.load_data_from_s3('\"Data_Science\/Text_Data\/Salesforce\/TechnicalInfo\/\"')'
 
 - step:
     name: load_data_tasks_daily
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/Salesforce\/Task\/\",yesterday="1"')'
+      - python -c 'import main; main.load_data_from_s3('\"Data_Science\/Text_Data\/Salesforce\/Task\/\",yesterday="1"')'
 
 - step:
     name: load_data_sessions_daily
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/Salesforce\/TechnicalInfo\/\",yesterday="1"')'
+      - python -c 'import main; main.load_data_from_s3('\"Data_Science\/Text_Data\/Salesforce\/TechnicalInfo\/\",yesterday="1"')'
 
 - step:
     name: load_data_emails_daily
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.load_data_from_s3('\"Text_Data\/Salesforce\/EmailMessage\/\",yesterday="1"')'
+      - python -c 'import main; main.load_data_from_s3('\"Data_Science\/Text_Data\/Salesforce\/EmailMessage\/\",yesterday="1"')'
 
 - step:
     name: aggregate_tasks
