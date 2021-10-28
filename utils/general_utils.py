@@ -56,7 +56,7 @@ def load_data_s3(source_folder, yesterday=False):
         else:
             object = your_bucket.Object(object_name)
             object.download_file(OUTPUT_PATH + '/loaded_source.csv')
-            total_df = pd.read_csv(OUTPUT_PATH + '/loaded_source.csv', error_bad_lines=False)
+            total_df = pd.read_csv(OUTPUT_PATH + '/loaded_source.csv', error_bad_lines=False, sep=';')
 
     else:
         object_list = []
@@ -69,7 +69,7 @@ def load_data_s3(source_folder, yesterday=False):
         for obj in object_list:
             curr_obj = your_bucket.Object(obj)
             curr_obj.download_file(OUTPUT_PATH + '/curr_sheet.csv')
-            curr_df = pd.read_csv(OUTPUT_PATH + '/curr_sheet.csv', error_bad_lines=False)
+            curr_df = pd.read_csv(OUTPUT_PATH + '/curr_sheet.csv', error_bad_lines=False, sep=';')
             curr_df.to_csv(OUTPUT_PATH + '/curr_sheet.csv', index=False)
             os.remove(OUTPUT_PATH + '/curr_sheet.csv')
             if first_obj:
