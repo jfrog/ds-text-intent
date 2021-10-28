@@ -158,7 +158,7 @@ def aggregate_emails():
 
 
 def aggregate_sessions():
-    sessions = pd.read_csv('/valohai/inputs/sessions/TechnicalInfo.csv')
+    sessions = pd.read_csv('/valohai/inputs/sessions/loaded_source.csv')
     payload = []
 
     cols = list(sessions.columns)
@@ -186,7 +186,7 @@ def aggregate_sessions():
 
 
 def aggregate_tasks():
-    tasks = pd.read_csv('/valohai/inputs/tasks/Task.csv')
+    tasks = pd.read_csv('/valohai/inputs/tasks/loaded_source.csv')
     payload = []
 
     cols = list(tasks.columns)
