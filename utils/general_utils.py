@@ -60,20 +60,23 @@ def load_data_s3(source_folder, yesterday=False):
 
     else:
         object_list = []
-        print(source_folder)
         for file in your_bucket.objects.all():
             if source_folder in file.key:
                 object_name = file.key
-                print(object_name)
                 object_list.append(object_name)
 
+        first_obj = True
         for obj in object_list:
             curr_obj = your_bucket.Object(obj)
             curr_obj.download_file(OUTPUT_PATH + '/curr_sheet.csv')
             curr_df = pd.read_csv(OUTPUT_PATH + '/curr_sheet.csv', error_bad_lines=False)
             curr_df.to_csv(OUTPUT_PATH + '/curr_sheet.csv', index=False)
             os.remove(OUTPUT_PATH + '/curr_sheet.csv')
-            total_df = total_df.concat([total_df, curr_df])
+            if first_obj:
+                total_df = curr_df
+            else:
+                total_df = total_df.concat([total_df, curr_df])
+            first_obj = False
 
     total_df.to_csv(OUTPUT_PATH + '/loaded_source.csv', index=False)
     return total_df
