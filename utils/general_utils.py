@@ -64,6 +64,7 @@ def load_data_s3(source_folder, yesterday=False):
         for file in your_bucket.objects.all():
             if source_folder in file.key:
                 object_name = file.key
+                print(object_name)
                 object_list.append(object_name)
 
         for obj in object_list:
