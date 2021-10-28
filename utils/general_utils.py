@@ -70,7 +70,7 @@ def load_data_s3(source_folder, yesterday=False):
             curr_obj = your_bucket.Object(obj)
             print(obj)
             curr_obj.download_file(OUTPUT_PATH + '/curr_sheet.csv')
-            curr_df = pd.read_csv(OUTPUT_PATH + '/curr_sheet.csv', error_bad_lines=False, sep='\001')
+            curr_df = pd.read_csv(OUTPUT_PATH + '/curr_sheet.csv', error_bad_lines=False, sep='\001', engine='python')
             curr_df.to_csv(OUTPUT_PATH + '/curr_sheet.csv', index=False)
             os.remove(OUTPUT_PATH + '/curr_sheet.csv')
             if first_obj:
