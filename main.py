@@ -66,7 +66,7 @@ def load_data_from_redshift(sql_file_name):
 
 
 def load_and_aggregate_emails():
-    emails = load_data_s3("Text_Data/EmailMessage/Upload/")
+    emails = load_data_s3("Data_Science/Text_Data/Salesforce/EmailMessage/")
     case_to_account_df = pd.read_csv('/valohai/inputs/case_to_account/case_to_account.csv', delimiter=";")
     payload = []
 
