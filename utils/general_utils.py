@@ -75,7 +75,7 @@ def load_data_s3(source_folder, yesterday=False):
             if first_obj:
                 total_df = curr_df
             else:
-                total_df = total_df.concat([total_df, curr_df])
+                total_df = pd.concat([total_df, curr_df])
             first_obj = False
 
     total_df.to_csv(OUTPUT_PATH + '/loaded_source.csv', index=False)
