@@ -13,7 +13,7 @@
       - python -c 'import main; main.load_and_aggregate_emails()'
     inputs:
       - name: case_to_account
-        default: datum://017b25c4-f56e-31f7-af18-231ca19c32f7
+        default: datum://017cd59c-5996-0a33-544c-966c53777106
 
 - step:
     name: load_data_tasks
@@ -78,7 +78,7 @@
       - python -c 'import main; main.aggregate_emails()'
     inputs:
       - name: case_to_account
-        default: datum://017b25c4-f56e-31f7-af18-231ca19c32f7
+        default: datum://017cd59c-5996-0a33-544c-966c53777106
       - name: emails
         default: datum://017b2608-8022-dff2-29b9-8bfd77c0622f
 
