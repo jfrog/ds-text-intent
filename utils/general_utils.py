@@ -59,6 +59,8 @@ def load_data_s3(source_folder, yesterday=False):
             total_df = pd.read_csv(OUTPUT_PATH + '/loaded_source.csv', error_bad_lines=False, sep='\001', engine='python', quoting=3)
 
     else:
+        # Since the data in email messages is too big, we skip older years for that case
+        only_later_years = 'EmailMessage' in source_folder
         object_list = []
         for file in your_bucket.objects.all():
             if source_folder in file.key:
@@ -67,6 +69,10 @@ def load_data_s3(source_folder, yesterday=False):
 
         first_obj = True
         for obj in object_list:
+            if only_later_years:
+                year = int(str(obj).split('/')[4])
+                if year < 2020:
+                    continue
             curr_obj = your_bucket.Object(obj)
             print(obj)
             curr_obj.download_file(OUTPUT_PATH + '/curr_sheet.csv')
