@@ -57,7 +57,7 @@ def load_data_s3(source_folder, yesterday=False):
         else:
             object = your_bucket.Object(object_name)
             object.download_file(OUTPUT_PATH + '/loaded_source.csv')
-            total_df = pd.read_csv(OUTPUT_PATH + '/loaded_source.csv', error_bad_lines=False, sep='\001', engine='python', quoting=3)
+            total_df = pd.read_csv(OUTPUT_PATH + '/loaded_source.csv', error_bad_lines=False, sep='\001')
 
     else:
         # Since the data in email messages is too big, we skip older years for that case
