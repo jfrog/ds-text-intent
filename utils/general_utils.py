@@ -31,6 +31,7 @@ def load_data_s3(source_folder, yesterday=False):
     AWS_SECRET = os.getenv('AWS_SECRET')
     AWS_REGION = os.getenv('AWS_REGION')
     OUTPUT_PATH = os.getenv('VH_OUTPUTS_DIR')
+
     session = Session(aws_access_key_id=AWS_KEY,
                       aws_secret_access_key=AWS_SECRET,
                       region_name=AWS_REGION)
@@ -73,10 +74,13 @@ def load_data_s3(source_folder, yesterday=False):
                 year = int(str(obj).split('/')[4])
                 if year < 2021:
                     continue
+
             curr_obj = your_bucket.Object(obj)
             print(obj)
             curr_obj.download_file(OUTPUT_PATH + '/curr_sheet.csv')
             curr_df = pd.read_csv(OUTPUT_PATH + '/curr_sheet.csv', error_bad_lines=False, sep='\001', engine='python', quoting=3)
+            print(curr_df.shape)
+            print(curr_df.columns)
             curr_df.to_csv(OUTPUT_PATH + '/curr_sheet.csv', index=False)
             os.remove(OUTPUT_PATH + '/curr_sheet.csv')
             if first_obj:
