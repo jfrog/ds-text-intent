@@ -7,7 +7,7 @@ import pandas as pd
 import os
 import numpy as np
 import pickle
-from datetime import date,datetime,timedelta
+from datetime import date, datetime, timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -62,6 +62,16 @@ def load_data_s3(source_folder, yesterday=False):
     else:
         # Since the data in email messages is too big, we skip older years for that case
         only_later_years = 'EmailMessage' in source_folder
+
+        if 'EmailMessage' in source_folder:
+            df_columns = ['Id', 'ParentId', 'Subject', 'TextBody', 'Incoming', 'CreatedDate']
+        elif 'TechnicalInfo' in source_folder:
+            df_columns = ['Id', 'Account__c', 'Case__c', 'Session_Date__c', 'Background__c',
+                          'Sales_Notes__c', 'Goal_of_the_meeting__c', 'Comments_of_client__c',
+                          'Architecture__c', 'Internal_Notes__c', 'External_Notes__c', 'RecordTypeId']
+        else:
+            df_columns = ['Id', 'AccountId', 'Comments__c', 'Subject', 'CreatedDate']
+
         object_list = []
         for file in your_bucket.objects.all():
             if source_folder in file.key:
@@ -72,13 +82,19 @@ def load_data_s3(source_folder, yesterday=False):
         for obj in object_list:
             if only_later_years:
                 year = int(str(obj).split('/')[4])
-                if year < 2021:
+                if year < 2018:
                     continue
 
             curr_obj = your_bucket.Object(obj)
             print(obj)
             curr_obj.download_file(OUTPUT_PATH + '/curr_sheet.csv')
-            curr_df = pd.read_csv(OUTPUT_PATH + '/curr_sheet.csv', error_bad_lines=False, sep='\001', engine='python', quoting=3)
+
+            curr_df = pd.read_csv(OUTPUT_PATH + '/curr_sheet.csv',
+                                  delimiter='\x01',
+                                  lineterminator='\x04',
+                                  usecols=df_columns,
+                                  encoding='utf-8',
+                                  skip_blank_lines=True)
             print(curr_df.shape)
             print(curr_df.columns)
             curr_df.to_csv(OUTPUT_PATH + '/curr_sheet.csv', index=False)
