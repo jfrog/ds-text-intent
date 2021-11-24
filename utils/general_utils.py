@@ -82,7 +82,7 @@ def load_data_s3(source_folder, yesterday=False):
         for obj in object_list:
             if only_later_years:
                 year = int(str(obj).split('/')[4])
-                if year < 2018:
+                if year < 2021:
                     continue
 
             curr_obj = your_bucket.Object(obj)

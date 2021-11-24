@@ -71,10 +71,11 @@ def load_and_aggregate_emails():
     case_to_account_df = pd.read_csv('/valohai/inputs/case_to_account/case_to_account.csv', delimiter=";")
     payload = []
 
-    cols = list(case_to_account_df.columns)
-    print(cols)
-    cols = list(emails.columns)
-    print(cols)
+    print(list(case_to_account_df.columns))
+    print(case_to_account_df.shape)
+    print(list(emails.columns))
+    print(emails.shape)
+
 
     case_to_account = {}
     for index, row in case_to_account_df.iterrows():
@@ -84,6 +85,7 @@ def load_and_aggregate_emails():
     non_text_cols = ['Id', 'ParentId', 'Incoming', 'CreatedDate']
     fields = [x for x in cols if x not in non_text_cols]
     for index, row in emails.iterrows():
+        print('iter')
         email_id = row['Id']
         case_id = row['ParentId']
         if case_id not in case_to_account:
