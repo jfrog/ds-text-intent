@@ -47,7 +47,7 @@ def load_data_s3(source_folder, yesterday=False):
         day = str(yesterday.day)
         full_folder = source_folder + year + '/' + month + '/' + day
         object_name = None
-        print(full_folder)
+        # print(full_folder)
         for file in your_bucket.objects.all():
             if full_folder in file.key:
                 object_name = file.key
@@ -86,7 +86,7 @@ def load_data_s3(source_folder, yesterday=False):
                     continue
 
             curr_obj = your_bucket.Object(obj)
-            print(obj)
+            # print(obj)
             curr_obj.download_file(OUTPUT_PATH + '/curr_sheet.csv')
 
             curr_df = pd.read_csv(OUTPUT_PATH + '/curr_sheet.csv',
@@ -95,8 +95,8 @@ def load_data_s3(source_folder, yesterday=False):
                                   usecols=df_columns,
                                   encoding='utf-8',
                                   skip_blank_lines=True)
-            print(curr_df.shape)
-            print(curr_df.columns)
+            # print(curr_df.shape)
+            # print(curr_df.columns)
             curr_df.to_csv(OUTPUT_PATH + '/curr_sheet.csv', index=False)
             os.remove(OUTPUT_PATH + '/curr_sheet.csv')
             if first_obj:
