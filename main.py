@@ -257,7 +257,7 @@ def upload_to_redshift(table_name):
     for col in list(final_df.columns):
         if col in cols_to_trim:
             print('max length of col ' + col)
-            print(final_df.col.str.len().max())
+            print(final_df[col].str.len().max())
             final_df[col] = final_df[col].apply(lambda x: x[:255])
 
     total_rows = final_df.shape[0]
