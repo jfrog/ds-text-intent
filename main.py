@@ -76,7 +76,6 @@ def load_and_aggregate_emails():
     print(list(emails.columns))
     print(emails.shape)
 
-
     case_to_account = {}
     for index, row in case_to_account_df.iterrows():
         case_to_account[row['id']] = [row['accountid'], row['name'], row['createddate']]
@@ -268,12 +267,12 @@ def upload_to_redshift(table_name):
         while final_df.shape[0] > 0:
             chunk = final_df.head(100000)
             chunk.to_sql(table_name,
-                            conn,
-                            schema='data_science',
-                            index=False,
-                            if_exists='replace',
-                            chunksize=10000,
-                            method='multi')
+                         conn,
+                         schema='data_science',
+                         index=False,
+                         if_exists='append',
+                         chunksize=10000,
+                         method='multi')
             final_df = final_df.tail(final_df.shape[0] - 100000)
 
     message = "Text Intent Project: The table " + table_name + " got updated with " + str(total_rows) + " rows!"
