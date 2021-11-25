@@ -84,7 +84,6 @@ def load_and_aggregate_emails():
     cols = list(emails.columns)
     non_text_cols = ['Id', 'ParentId', 'Incoming', 'CreatedDate']
     fields = [x for x in cols if x not in non_text_cols]
-    print(fields)
     for index, row in emails.iterrows():
         email_id = row['Id']
         case_id = row['ParentId'][:-3]
@@ -108,10 +107,8 @@ def load_and_aggregate_emails():
                             temp_dict['instance_date'] = row['CreatedDate']
                             temp_dict['term'] = sublist[0]
                             temp_dict['type'] = 'email_' + field + '_' + incoming
-                            print(temp_dict)
                 # If temp dict is not empty than append to the final payload
                 if temp_dict:
-                    print('Im here now')
                     payload.append(temp_dict)
 
     print(len(payload))
@@ -252,6 +249,8 @@ def upload_to_redshift(table_name):
     user = os.getenv('user')
     password = os.getenv('password')
     final_df = pd.read_csv('/valohai/inputs/final/final.csv')
+    final_df['insert_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    final_df['insert_date'] = datetime.now().strftime("%Y-%m-%d")
     conn = create_engine(
         'postgresql://' + user + ':' + password + '@' + host + ':' + port + '/' + dbname)
     final_df.to_sql(table_name,
