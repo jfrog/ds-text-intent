@@ -255,9 +255,11 @@ def upload_to_redshift(table_name):
     final_df['insert_date'] = datetime.now().strftime("%Y-%m-%d")
     total_rows = final_df.shape[0]
     first_insert = True
+    iter = 1
     while final_df.shape[0] > 0:
         if_exists = 'replace' if first_insert else 'append'
         chunk = final_df.head(100000)
+        print(iter * 100000)
         chunk.to_sql(table_name,
                      conn,
                      schema='data_science',
@@ -267,6 +269,7 @@ def upload_to_redshift(table_name):
                      method='multi')
         final_df = final_df.tail(final_df.shape[0] - 100000)
         first_insert = False
+        iter += 1
 
     message = "Text Intent Project: The table " + table_name + " got updated with " + str(total_rows) + " rows!"
     send_slack_message(message)
