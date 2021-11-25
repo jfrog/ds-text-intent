@@ -251,6 +251,7 @@ def upload_to_redshift(table_name):
     final_df = pd.read_csv('/valohai/inputs/final/final.csv')
     final_df['insert_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     final_df['insert_date'] = datetime.now().strftime("%Y-%m-%d")
+    final_df = final_df.head(100000)
     conn = create_engine(
         'postgresql://' + user + ':' + password + '@' + host + ':' + port + '/' + dbname)
     final_df.to_sql(table_name,
