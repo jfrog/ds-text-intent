@@ -265,7 +265,7 @@ def upload_to_redshift(table_name):
     iter = 1
     while final_df.shape[0] > 0:
         if_exists = 'replace' if first_insert else 'append'
-        chunk = final_df.tail(100000)
+        chunk = final_df.tail(20000)
         chunk.to_sql(table_name,
                      conn,
                      schema='data_science',
@@ -274,7 +274,7 @@ def upload_to_redshift(table_name):
                      chunksize=10000,
                      method='multi')
         print(chunk.shape[0])
-        final_df = final_df.head(final_df.shape[0] - 100000)
+        final_df = final_df.head(final_df.shape[0] - 20000)
         first_insert = False
         iter += 1
 
