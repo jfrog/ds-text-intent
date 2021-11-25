@@ -101,7 +101,7 @@ def load_and_aggregate_emails():
             for sublist in trigger_terms:
                 temp_dict = {}
                 for term in sublist:
-                    if not pd.isnull(row[field]):
+                    if not pd.isna(row[field]):
                         print('Im here')
                         if term.lower() in row[field].lower():
                             temp_dict['account_id'] = account_id
