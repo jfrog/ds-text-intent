@@ -85,7 +85,6 @@ def load_and_aggregate_emails():
     non_text_cols = ['Id', 'ParentId', 'Incoming', 'CreatedDate']
     fields = [x for x in cols if x not in non_text_cols]
     for index, row in emails.iterrows():
-        print('iter')
         email_id = row['Id']
         case_id = row['ParentId']
         if case_id not in case_to_account:
@@ -112,6 +111,7 @@ def load_and_aggregate_emails():
                 if temp_dict:
                     payload.append(temp_dict)
 
+    print(len(payload))
     final_df = pd.DataFrame(payload)
     final_df.to_csv('/valohai/outputs/emails.csv', index=False)
 
