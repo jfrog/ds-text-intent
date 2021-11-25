@@ -84,6 +84,7 @@ def load_and_aggregate_emails():
     cols = list(emails.columns)
     non_text_cols = ['Id', 'ParentId', 'Incoming', 'CreatedDate']
     fields = [x for x in cols if x not in non_text_cols]
+    print(fields)
     for index, row in emails.iterrows():
         email_id = row['Id']
         case_id = row['ParentId']
@@ -101,14 +102,17 @@ def load_and_aggregate_emails():
                 temp_dict = {}
                 for term in sublist:
                     if not pd.isnull(row[field]):
+                        print('Im here')
                         if term.lower() in row[field].lower():
                             temp_dict['account_id'] = account_id
                             temp_dict['instance_id'] = email_id
                             temp_dict['instance_date'] = row['CreatedDate']
                             temp_dict['term'] = sublist[0]
                             temp_dict['type'] = 'email_' + field + '_' + incoming
+                            print(temp_dict)
                 # If temp dict is not empty than append to the final payload
                 if temp_dict:
+                    print('Im here now')
                     payload.append(temp_dict)
 
     print(len(payload))
