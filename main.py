@@ -253,7 +253,7 @@ def upload_to_redshift(table_name):
     final_df = pd.read_csv('/valohai/inputs/final/final.csv')
     final_df['insert_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     final_df['insert_date'] = datetime.now().strftime("%Y-%m-%d")
-    final_df = final_df.loc['instance_id' != '02s6900002S2aYXAAZ', :]
+    final_df = final_df.loc[final_df['instance_id'] != '02s6900002S2aYXAAZ', :]
     cols_to_trim = ['account_id', 'instance_id', 'term', 'type']
     for col in list(final_df.columns):
         if col in cols_to_trim:
