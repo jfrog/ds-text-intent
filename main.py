@@ -88,7 +88,7 @@ def load_and_aggregate_emails():
     for index, row in emails.iterrows():
         email_id = row['Id']
         case_id = row['ParentId']
-        if case_id not in case_to_account:
+        if case_id not in case_to_account and case_id[:-3] not in case_to_account:
             continue
 
         account_id = case_to_account[case_id][0]
@@ -97,21 +97,18 @@ def load_and_aggregate_emails():
             continue
 
         incoming = "incoming" if row['Incoming'] == 'true' else 'outgoing'
-        print(trigger_terms)
         for field in fields:
             for sublist in trigger_terms:
                 temp_dict = {}
-                print(sublist)
                 for term in sublist:
-                    print(term)
-                    print('Im here')
-                    if term.lower() in row[field].lower():
-                        temp_dict['account_id'] = account_id
-                        temp_dict['instance_id'] = email_id
-                        temp_dict['instance_date'] = row['CreatedDate']
-                        temp_dict['term'] = sublist[0]
-                        temp_dict['type'] = 'email_' + field + '_' + incoming
-                        print(temp_dict)
+                    if not pd.isna(row[field]):
+                        if term.lower() in row[field].lower():
+                            temp_dict['account_id'] = account_id
+                            temp_dict['instance_id'] = email_id
+                            temp_dict['instance_date'] = row['CreatedDate']
+                            temp_dict['term'] = sublist[0]
+                            temp_dict['type'] = 'email_' + field + '_' + incoming
+                            print(temp_dict)
                 # If temp dict is not empty than append to the final payload
                 if temp_dict:
                     print('Im here now')
