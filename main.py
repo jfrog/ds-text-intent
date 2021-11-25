@@ -87,8 +87,8 @@ def load_and_aggregate_emails():
     print(fields)
     for index, row in emails.iterrows():
         email_id = row['Id']
-        case_id = row['ParentId']
-        if case_id not in case_to_account and case_id[:-3] not in case_to_account:
+        case_id = row['ParentId'][:-3]
+        if case_id not in case_to_account:
             continue
 
         account_id = case_to_account[case_id][0]
