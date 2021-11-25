@@ -248,20 +248,35 @@ def upload_to_redshift(table_name):
     port = os.getenv('port')
     user = os.getenv('user')
     password = os.getenv('password')
+    conn = create_engine(
+        'postgresql://' + user + ':' + password + '@' + host + ':' + port + '/' + dbname)
+
     final_df = pd.read_csv('/valohai/inputs/final/final.csv')
     final_df['insert_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     final_df['insert_date'] = datetime.now().strftime("%Y-%m-%d")
-    final_df = final_df.head(100000)
-    conn = create_engine(
-        'postgresql://' + user + ':' + password + '@' + host + ':' + port + '/' + dbname)
-    final_df.to_sql(table_name,
-                    conn,
-                    schema='data_science',
-                    index=False,
-                    if_exists='replace',
-                    chunksize=10000,
-                    method='multi')
-    message = "Text Intent Project: The table " + table_name + " got updated with " + str(final_df.shape[0]) + " rows!"
+    total_rows = final_df.shape[0]
+
+    if final_df.shape[0] <= 100000:
+        final_df.to_sql(table_name,
+                        conn,
+                        schema='data_science',
+                        index=False,
+                        if_exists='replace',
+                        chunksize=10000,
+                        method='multi')
+    else:
+        while final_df.shape[0] > 0:
+            chunk = final_df.head(100000)
+            chunk.to_sql(table_name,
+                            conn,
+                            schema='data_science',
+                            index=False,
+                            if_exists='replace',
+                            chunksize=10000,
+                            method='multi')
+            final_df = final_df.tail(final_df.shape[0] - 100000)
+
+    message = "Text Intent Project: The table " + table_name + " got updated with " + str(total_rows) + " rows!"
     send_slack_message(message)
     print(message)
 
