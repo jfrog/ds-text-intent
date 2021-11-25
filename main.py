@@ -253,13 +253,15 @@ def upload_to_redshift(table_name):
     final_df = pd.read_csv('/valohai/inputs/final/final.csv')
     final_df['insert_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     final_df['insert_date'] = datetime.now().strftime("%Y-%m-%d")
+    for col in list(final_df.columns):
+        final_df[col] = final_df[col][:255]
+
     total_rows = final_df.shape[0]
     first_insert = True
     iter = 1
     while final_df.shape[0] > 0:
         if_exists = 'replace' if first_insert else 'append'
         chunk = final_df.tail(100000)
-        print(iter * 100000)
         chunk.to_sql(table_name,
                      conn,
                      schema='data_science',
@@ -267,6 +269,7 @@ def upload_to_redshift(table_name):
                      if_exists=if_exists,
                      chunksize=10000,
                      method='multi')
+        print(chunk.shape[0])
         final_df = final_df.head(final_df.shape[0] - 100000)
         first_insert = False
         iter += 1
