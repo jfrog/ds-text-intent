@@ -254,7 +254,7 @@ def upload_to_redshift(table_name):
     final_df['insert_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     final_df['insert_date'] = datetime.now().strftime("%Y-%m-%d")
     for col in list(final_df.columns):
-        final_df[col] = final_df[col][:255]
+        final_df[col] = final_df[col].apply(lambda x: x[:255])
 
     total_rows = final_df.shape[0]
     first_insert = True
