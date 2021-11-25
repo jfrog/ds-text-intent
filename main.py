@@ -97,10 +97,13 @@ def load_and_aggregate_emails():
             continue
 
         incoming = "incoming" if row['Incoming'] == 'true' else 'outgoing'
+        print(trigger_terms)
         for field in fields:
             for sublist in trigger_terms:
                 temp_dict = {}
+                print(sublist)
                 for term in sublist:
+                    print(term)
                     print('Im here')
                     if term.lower() in row[field].lower():
                         temp_dict['account_id'] = account_id
