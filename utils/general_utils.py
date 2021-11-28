@@ -66,7 +66,7 @@ def load_data_s3(source_folder, yesterday=False):
         else:
             object = your_bucket.Object(object_name)
             object.download_file(OUTPUT_PATH + '/loaded_source.csv')
-            total_df = pd.read_csv(OUTPUT_PATH + '/curr_sheet.csv',
+            total_df = pd.read_csv(OUTPUT_PATH + '/loaded_source.csv',
                                   delimiter='\x01',
                                   lineterminator='\x04',
                                   usecols=df_columns,
