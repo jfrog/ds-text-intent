@@ -38,6 +38,15 @@ def load_data_s3(source_folder, yesterday=False):
     s3 = session.resource('s3')
     your_bucket = s3.Bucket('prod-is-data-science-bucket')
 
+    if 'EmailMessage' in source_folder:
+        df_columns = ['Id', 'ParentId', 'Subject', 'TextBody', 'Incoming', 'CreatedDate']
+    elif 'TechnicalInfo' in source_folder:
+        df_columns = ['Id', 'Account__c', 'Case__c', 'Session_Date__c', 'Background__c',
+                      'Sales_Notes__c', 'Goal_of_the_meeting__c', 'Comments_of_client__c',
+                      'Architecture__c', 'Internal_Notes__c', 'External_Notes__c', 'RecordTypeId']
+    else:
+        df_columns = ['Id', 'AccountId', 'Comments__c', 'Subject', 'CreatedDate']
+
     # file_name_for_save = folder_name.split('/')[-3]
     total_df = None
     if yesterday:
@@ -57,21 +66,15 @@ def load_data_s3(source_folder, yesterday=False):
         else:
             object = your_bucket.Object(object_name)
             object.download_file(OUTPUT_PATH + '/loaded_source.csv')
-            total_df = pd.read_csv(OUTPUT_PATH + '/loaded_source.csv', error_bad_lines=False, sep='\001')
-
+            total_df = pd.read_csv(OUTPUT_PATH + '/curr_sheet.csv',
+                                  delimiter='\x01',
+                                  lineterminator='\x04',
+                                  usecols=df_columns,
+                                  encoding='utf-8',
+                                  skip_blank_lines=True)
     else:
         # Since the data in email messages is too big, we skip older years for that case
         only_later_years = 'EmailMessage' in source_folder
-
-        if 'EmailMessage' in source_folder:
-            df_columns = ['Id', 'ParentId', 'Subject', 'TextBody', 'Incoming', 'CreatedDate']
-        elif 'TechnicalInfo' in source_folder:
-            df_columns = ['Id', 'Account__c', 'Case__c', 'Session_Date__c', 'Background__c',
-                          'Sales_Notes__c', 'Goal_of_the_meeting__c', 'Comments_of_client__c',
-                          'Architecture__c', 'Internal_Notes__c', 'External_Notes__c', 'RecordTypeId']
-        else:
-            df_columns = ['Id', 'AccountId', 'Comments__c', 'Subject', 'CreatedDate']
-
         object_list = []
         for file in your_bucket.objects.all():
             if source_folder in file.key:
