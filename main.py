@@ -17,6 +17,7 @@ import requests
 
 load_dotenv()
 
+# TODO: Move to a table in redshift
 trigger_terms = [['high availability', 'high-availability', ' ha ', ' ha.', ' ha,'], ['enterprise'],
                  ['multiple', 'multi site', 'multi-site',
                   'multisite', 'multiple sites'], ['downtime', 'down time'], ['bad performance', 'low performance'],
@@ -71,11 +72,6 @@ def load_and_aggregate_emails():
     case_to_account_df = pd.read_csv('/valohai/inputs/case_to_account/case_to_account.csv', delimiter=";")
     payload = []
 
-    print(list(case_to_account_df.columns))
-    print(case_to_account_df.shape)
-    print(list(emails.columns))
-    print(emails.shape)
-
     case_to_account = {}
     for index, row in case_to_account_df.iterrows():
         case_to_account[row['id']] = [row['accountid'], row['name'], row['createddate']]
@@ -117,7 +113,7 @@ def load_and_aggregate_emails():
 
 def aggregate_emails():
     case_to_account_df = pd.read_csv('/valohai/inputs/case_to_account/case_to_account.csv', delimiter=";")
-    emails = pd.read_csv('/valohai/inputs/emails/EmailMessage.csv')
+    emails = pd.read_csv('/valohai/inputs/emails/loaded_source.csv')
     payload = []
 
     cols = list(case_to_account_df.columns)
@@ -253,7 +249,8 @@ def upload_to_redshift(table_name):
     final_df = pd.read_csv('/valohai/inputs/final/final.csv')
     final_df['insert_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     final_df['insert_date'] = datetime.now().strftime("%Y-%m-%d")
-    final_df = final_df.loc[(final_df['instance_id'] != '02s6900002S2ieRAAR') & (final_df['account_id'] != '') & ~(final_df['account_id'].isna()), :]
+    final_df = final_df.loc[(final_df['instance_id'] != '02s6900002S2ieRAAR') & (final_df['account_id'] != '') & ~(
+        final_df['account_id'].isna()), :]
     cols_to_trim = ['account_id', 'instance_id', 'instance_date', 'term', 'type']
 
     for col in list(final_df.columns):
