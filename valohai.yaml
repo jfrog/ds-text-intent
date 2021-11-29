@@ -75,7 +75,7 @@
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.aggregate_emails()'
+      - python -c 'import main; main.load_and_aggregate_emails('load="0"')'
     inputs:
       - name: case_to_account
         default: datum://017cd59c-5996-0a33-544c-966c53777106
