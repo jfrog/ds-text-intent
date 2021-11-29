@@ -107,6 +107,18 @@
       - name: final
         default: datum://017b2770-cfe0-e51c-37e1-2931e066483a
 
+
+- step:
+    name: upload_to_redshift_append
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.upload_to_redshift('"simple_intent_alltime",load="0"')'
+    inputs:
+      - name: final
+        default: datum://017b2770-cfe0-e51c-37e1-2931e066483a
+
+
 - step:
     name: upload_to_s3
     image: yotamljfrog/ds-general-image:0.1
@@ -214,9 +226,9 @@
             - name: emails
             - name: sessions
             - name: tasks
-      - name: upload_to_redshift
+      - name: upload_to_redshift_append
         type: execution
-        step: upload_to_redshift
+        step: upload_to_redshift_append
         override:
           inputs:
             - name: final
@@ -228,6 +240,6 @@
       - [aggregate_emails.output.*.csv, concat_all.inputs.emails]
       - [aggregate_tasks.output.*.csv, concat_all.inputs.tasks]
       - [aggregate_sessions.output.*.csv, concat_all.inputs.sessions]
-      - [concat_all.output.*.csv, upload_to_redshift.inputs.final]
+      - [concat_all.output.*.csv, upload_to_redshift_append.inputs.final]
 
 

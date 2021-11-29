@@ -198,7 +198,8 @@ def concat_all():
         all_data.to_csv('/valohai/outputs/final.csv', index=False)
 
 
-def upload_to_redshift(table_name):
+def upload_to_redshift(table_name, append="0"):
+    append = bool(int(append))
     dbname = os.getenv('dbname')
     host = os.getenv('host')
     port = os.getenv('port')
@@ -224,7 +225,7 @@ def upload_to_redshift(table_name):
     first_insert = True
     iter = 1
     while final_df.shape[0] > 0:
-        if_exists = 'replace' if first_insert else 'append'
+        if_exists = 'append' if append or not first_insert else 'replace'
         chunk = final_df.tail(100000)
         chunk.to_sql(table_name,
                      conn,
