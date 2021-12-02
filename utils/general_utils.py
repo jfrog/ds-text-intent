@@ -62,6 +62,7 @@ def load_data_s3(source_folder, days_back=1):
             if full_folder in file.key:
                 object_name = file.key
 
+        print(object_name)
         if not object_name:
             print("Folder for that date does not exist!")
         else:
@@ -73,6 +74,7 @@ def load_data_s3(source_folder, days_back=1):
                                   usecols=df_columns,
                                   encoding='utf-8',
                                   skip_blank_lines=True)
+
     else:
         object_list = []
         for file in your_bucket.objects.all():
@@ -111,38 +113,6 @@ def load_data_s3(source_folder, days_back=1):
 
     total_df.to_csv(OUTPUT_PATH + '/loaded_source.csv', index=False)
     return total_df
-
-
-def load_data_s3_with_date_filter(folder_name, date_from):
-    AWS_KEY = os.getenv('AWS_KEY')
-    AWS_SECRET = os.getenv('AWS_SECRET')
-    AWS_REGION = os.getenv('AWS_REGION')
-    session = Session(aws_access_key_id=AWS_KEY,
-                      aws_secret_access_key=AWS_SECRET,
-                      region_name=AWS_REGION)
-    s3 = session.resource('s3')
-    your_bucket = s3.Bucket('prod-is-data-science-bucket')
-
-    file_name_for_save = folder_name.split('/')[-3]
-    object_name = ""
-    for file in your_bucket.objects.all():
-        if folder_name in file.key:
-            object_name = file.key
-
-    object = your_bucket.Object(object_name)
-    OUTPUT_PATH = os.getenv('VH_OUTPUTS_DIR')
-    object.download_file(OUTPUT_PATH + '/' + file_name_for_save + '.csv')
-    df = pd.read_csv(OUTPUT_PATH + '/' + file_name_for_save + '.csv', error_bad_lines=False)
-    print(date_from)
-    if 'CreatedDate' in list(df.columns):
-        df['CreatedDate'] = pd.to_datetime(df['CreatedDate'])
-        df = df[df['CreatedDate'] >= date_from]
-    else:
-        df['Session_Date__c'] = pd.to_datetime(df['Session_Date__c'])
-        df = df[df['Session_Date__c'] >= date_from]
-
-    df.to_csv(OUTPUT_PATH + '/' + file_name_for_save + '.csv', index=False)
-    return df
 
 
 # - load data from Red Shift
