@@ -10,14 +10,14 @@
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.load_data_from_s3('\"Data_Science\/Text_Data\/Salesforce\/Task\/\",days_back="1"')'
+      - python -c 'import main; main.load_data_from_s3('\"Data_Science\/Text_Data\/Salesforce\/Task\/\",days_back="720"')'
 
 - step:
     name: load_data_sessions
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.load_data_from_s3('\"Data_Science\/Text_Data\/Salesforce\/TechnicalInfo\/\",days_back="1"')'
+      - python -c 'import main; main.load_data_from_s3('\"Data_Science\/Text_Data\/Salesforce\/TechnicalInfo\/\",days_back="720"')'
 
 - step:
     name: load_and_aggregate_emails
