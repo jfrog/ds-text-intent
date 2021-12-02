@@ -54,25 +54,14 @@ def send_slack_message(message):
         print("Failed to sent message to data-science slack channel. please check the Workato recipe related to this.")
 
 
-def load_data_from_s3(folder_name, yesterday=0):
-    yesterday = yesterday == 1
-    load_data_s3(folder_name, yesterday=yesterday)
+def load_data_from_s3(folder_name, days_back=1):
+    load_data_s3(folder_name, days_back=days_back)
 
 
-# def load_data_from_s3_all_subfolders(source_folder):
-
-
-def load_data_from_redshift(sql_file_name):
-    load_data_redshift(sql_file_name)
-
-
-def load_and_aggregate_emails(load="1"):
-    load = bool(int(load))
-    if load:
-        load_data_s3("Data_Science/Text_Data/Salesforce/EmailMessage/")
-        emails = pd.read_csv('/valohai/outputs/loaded_source.csv')
-    else:
-        emails = pd.read_csv('/valohai/inputs/emails/loaded_source.csv')
+def load_and_aggregate_emails(days_back=1):
+    days_back = int(days_back)
+    load_data_s3("Data_Science/Text_Data/Salesforce/EmailMessage/", days_back=days_back)
+    emails = pd.read_csv('/valohai/outputs/loaded_source.csv')
 
     case_to_account_df = pd.read_csv('/valohai/inputs/case_to_account/case_to_account.csv', delimiter=";")
     payload = []
@@ -198,6 +187,10 @@ def concat_all():
         all_data.to_csv('/valohai/outputs/final.csv', index=False)
 
 
+def load_data_from_redshift(sql_file_name):
+    load_data_redshift(sql_file_name)
+
+
 def upload_to_redshift(table_name, append="0"):
     append = bool(int(append))
     dbname = os.getenv('dbname')
@@ -214,7 +207,6 @@ def upload_to_redshift(table_name, append="0"):
     final_df = final_df.loc[(final_df['instance_id'] != '02s6900002S2ieRAAR') & (final_df['account_id'] != '') & ~(
         final_df['account_id'].isna()), :]
     cols_to_trim = ['account_id', 'instance_id', 'instance_date', 'term', 'type']
-
     for col in list(final_df.columns):
         if col in cols_to_trim:
             print('max length of col ' + col)
@@ -242,16 +234,3 @@ def upload_to_redshift(table_name, append="0"):
     message = "Text Intent Project: The table " + table_name + " got updated with " + str(total_rows) + " rows!"
     send_slack_message(message)
     print(message)
-
-
-def upload_to_s3(folder_path, file_name):
-    df_with_predictions = pd.read_csv('/valohai/inputs/data_with_predictions/data_with_predictions.csv')
-    filename = 'final_prediction.csv'
-    df_with_predictions.to_csv('/valohai/outputs/' + filename)
-    AWS_KEY = os.getenv('AWS_KEY')
-    AWS_SECRET = os.getenv('AWS_SECRET')
-    AWS_BUCKET = boto.connect_s3(AWS_KEY, AWS_SECRET).get_bucket('prod-is-data-science-bucket')
-    s3_upload_folder_path = 'csat_model/valohai/upload/'
-    local_path = '/valohai/outputs/' + filename
-    key = Key(AWS_BUCKET, s3_upload_folder_path + filename)
-    key.set_contents_from_filename(local_path)

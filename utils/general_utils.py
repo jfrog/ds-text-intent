@@ -26,12 +26,11 @@ def explore_bucket_s3():
         print(file)
 
 
-def load_data_s3(source_folder, yesterday=False):
+def load_data_s3(source_folder, days_back=1):
     AWS_KEY = os.getenv('AWS_KEY')
     AWS_SECRET = os.getenv('AWS_SECRET')
     AWS_REGION = os.getenv('AWS_REGION')
     OUTPUT_PATH = os.getenv('VH_OUTPUTS_DIR')
-
     session = Session(aws_access_key_id=AWS_KEY,
                       aws_secret_access_key=AWS_SECRET,
                       region_name=AWS_REGION)
@@ -39,30 +38,32 @@ def load_data_s3(source_folder, yesterday=False):
     your_bucket = s3.Bucket('prod-is-data-science-bucket')
 
     if 'EmailMessage' in source_folder:
-        df_columns = ['Id', 'ParentId', 'Subject', 'TextBody', 'Incoming', 'CreatedDate']
+        df_columns = ['Id', 'ParentId',
+                      'Subject', 'TextBody', 'Incoming', 'CreatedDate']
     elif 'TechnicalInfo' in source_folder:
         df_columns = ['Id', 'Account__c', 'Case__c', 'Session_Date__c', 'Background__c',
                       'Sales_Notes__c', 'Goal_of_the_meeting__c', 'Comments_of_client__c',
                       'Architecture__c', 'Internal_Notes__c', 'External_Notes__c', 'RecordTypeId']
     else:
-        df_columns = ['Id', 'AccountId', 'Comments__c', 'Subject', 'CreatedDate']
+        df_columns = ['Id', 'AccountId',
+                      'Comments__c', 'Subject', 'CreatedDate']
 
-    # file_name_for_save = folder_name.split('/')[-3]
     total_df = None
-    if yesterday:
-        yesterday = datetime.utcnow().date() - timedelta(days=2)
-        year = str(yesterday.year)
-        month = str(yesterday.month)
-        day = str(yesterday.day)
+    since_date = datetime.utcnow().date() - timedelta(days=days_back)
+    year = str(since_date.year)
+    month = str(since_date.month)
+    day = str(since_date.day)
+    if days_back < 1:
+        print("Minimum days_back parameter is 1! please change the code")
+    elif days_back == 1:
         full_folder = source_folder + year + '/' + month + '/' + day
         object_name = None
-        # print(full_folder)
         for file in your_bucket.objects.all():
             if full_folder in file.key:
                 object_name = file.key
 
         if not object_name:
-            print("Folder for the date " + str(yesterday) + " does not exist!")
+            print("Folder for that date does not exist!")
         else:
             object = your_bucket.Object(object_name)
             object.download_file(OUTPUT_PATH + '/loaded_source.csv')
@@ -73,8 +74,6 @@ def load_data_s3(source_folder, yesterday=False):
                                   encoding='utf-8',
                                   skip_blank_lines=True)
     else:
-        # Since the data in email messages is too big, we skip older years for that case
-        only_later_years = 'EmailMessage' in source_folder
         object_list = []
         for file in your_bucket.objects.all():
             if source_folder in file.key:
@@ -83,23 +82,25 @@ def load_data_s3(source_folder, yesterday=False):
 
         first_obj = True
         for obj in object_list:
-            if only_later_years:
-                year = int(str(obj).split('/')[4])
-                if year < 2018:
-                    continue
+
+            year_str = int(str(obj).split('/')[4])
+            month_str = int(str(obj).split('/')[5])
+            day_str = int(str(obj).split('/')[6])
+            if year_str < int(year):
+                continue
+            elif month_str < int(month):
+                continue
+            elif day_str < int(day):
+                continue
 
             curr_obj = your_bucket.Object(obj)
-            # print(obj)
             curr_obj.download_file(OUTPUT_PATH + '/curr_sheet.csv')
-
             curr_df = pd.read_csv(OUTPUT_PATH + '/curr_sheet.csv',
                                   delimiter='\x01',
                                   lineterminator='\x04',
                                   usecols=df_columns,
                                   encoding='utf-8',
                                   skip_blank_lines=True)
-            # print(curr_df.shape)
-            # print(curr_df.columns)
             curr_df.to_csv(OUTPUT_PATH + '/curr_sheet.csv', index=False)
             os.remove(OUTPUT_PATH + '/curr_sheet.csv')
             if first_obj:
@@ -194,54 +195,3 @@ def load_data_old(query_name):
     query_result = pd.read_csv(idea_path + os.getcwd().rsplit('/', 1)[-1] + '/data/' + query_name[:0 - 4] + '.csv',
                                delimiter=';', header=0)
     return query_result
-
-
-# - not used in this project
-def get_cat_features(x):
-    """
-    :param x: a Data Frame
-    :return: indices of categorical columns
-    """
-    return np.where((x.dtypes != np.float) & (x.dtypes != np.int))[0]
-
-
-# - returns the names of the categorical features in the input (used for Catboost)
-def get_cat_feature_names(X):
-    """
-
-    :param X: the input features (a DataFrame)
-    :return: the names of the categorical features
-    """
-    return [col for col in X.columns if X.dtypes[col] not in [np.int, np.float]]
-
-
-# - get the technologies names
-def get_technologies():
-    return ['maven', 'generic', 'buildinfo', 'docker', 'npm', 'pypi', 'gradle', 'nuget', 'yum',
-            'helm', 'gems', 'debian', 'ivy', 'sbt', 'conan', 'bower', 'go', 'chef', 'gitlfs',
-            'composer', 'puppet', 'conda', 'vagrant', 'cocoapods', 'cran', 'opkg', 'p2', 'vcs', 'alpine']
-
-
-# - load the trials data, and the training leads data with a pickle.  If it was loaded from the db lately than load the
-# corresponding pickle, otherwise load it from the db using load_data method. In the one hand we will not be up-to-date
-# in each time we work with the training data, but on the other hand we will not load the queries each time
-
-def load_train_trials_pickle(days_between_loads=7):
-    """
-
-    :param days_between_loads: how frequently we would like to load the data from the db
-    (instead of the pickle which is not up-to-date)
-    :return: the leads data of the training set  (labeled data), and the trials data
-    """
-    last_load_time = pickle.load(open(r'pickle/last_load_time.pkl', 'rb'))
-    if (date.today() - last_load_time).days >= days_between_loads:
-        df_train = load_data('get_data_train.sql')
-        df_trials = load_data('get_trials.sql')
-        pickle.dump(df_train, open(r'pickle/df_train.pkl', 'wb'))
-        pickle.dump(df_trials, open(r'pickle/df_trails.pkl', 'wb'))
-        last_load_time = date.today()
-        pickle.dump(last_load_time, open(r'pickle/last_load_time.pkl', 'wb'))
-    else:
-        df_train = pickle.load(open(r'pickle/df_train.pkl', 'rb'))
-        df_trials = pickle.load(open(r'pickle/df_trails.pkl', 'rb'))
-    return df_train, df_trials
