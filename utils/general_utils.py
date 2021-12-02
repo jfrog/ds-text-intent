@@ -65,6 +65,7 @@ def load_data_s3(source_folder, days_back=1):
         print(year)
         print(month)
         print(day)
+        print(full_folder)
         print(object_name)
         if not object_name:
             print("Folder for that date does not exist!")
