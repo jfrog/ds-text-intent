@@ -154,7 +154,7 @@ def aggregate_tasks():
     final_df.to_csv('/valohai/outputs/tasks.csv', index=False)
 
 
-def aggregate(source: str, days_back=1):
+def aggregate(source, days_back=1):
     payload = []
     source_df = None
     non_text_cols = None
@@ -163,7 +163,7 @@ def aggregate(source: str, days_back=1):
         source_df = pd.read_csv('/valohai/inputs/tasks/loaded_source.csv')
         non_text_cols = ['Id', 'AccountId', 'CreatedDate']
     elif source == 'sessions':
-        source_df = pd.read_csv('/valohai/inputs/tasks/loaded_source.csv')
+        source_df = pd.read_csv('/valohai/inputs/sessions/loaded_source.csv')
         non_text_cols = ['Id', 'Account__c', 'Session_Date__c', 'RecordTypeId']
     elif source == 'emails':
         days_back = int(days_back)
