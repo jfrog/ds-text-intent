@@ -50,6 +50,37 @@
         default: datum://017b2574-47d9-81f5-8179-07a28c2e0279
 
 - step:
+    name: load_and_aggregate_emails2
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.load_and_aggregate_emails('source="emails",days_back=1')'
+    inputs:
+      - name: case_to_account
+        default: datum://017cfae9-2470-1204-7bf0-4433d93f3b58
+
+- step:
+    name: aggregate_tasks2
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.aggregate('source="tasks"')'
+    inputs:
+      - name: tasks
+        default: datum://017b25a6-a638-3d8c-2758-67abee4f1be4
+
+- step:
+    name: aggregate_sessions2
+    image: yotamljfrog/ds-general-image:0.1
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.aggregate('source="sessions"')'
+    inputs:
+      - name: sessions
+        default: datum://017b2574-47d9-81f5-8179-07a28c2e0279
+
+
+- step:
     name: concat_all
     image: yotamljfrog/ds-general-image:0.1
     command:
@@ -88,19 +119,19 @@
         step: load_data_sessions
       - name: load_and_aggregate_emails
         type: execution
-        step: load_and_aggregate_emails
+        step: load_and_aggregate_emails2
         override:
           inputs:
             - name: case_to_account
       - name: aggregate_sessions
         type: execution
-        step: aggregate_sessions
+        step: aggregate_sessions2
         override:
           inputs:
             - name: sessions
       - name: aggregate_tasks
         type: execution
-        step: aggregate_tasks
+        step: aggregate_tasks2
         override:
           inputs:
             - name: tasks

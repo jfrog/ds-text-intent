@@ -1,4 +1,6 @@
 from datetime import datetime, date, timedelta
+from debugpy.common import json
+import json
 from utils.general_utils import *
 import pickle
 import boto
@@ -54,7 +56,6 @@ def load_and_aggregate_emails(days_back=1):
     days_back = int(days_back)
     load_data_s3("Data_Science/Text_Data/Salesforce/EmailMessage/", days_back=days_back)
     emails = pd.read_csv('/valohai/outputs/loaded_source.csv')
-
     case_to_account_df = pd.read_csv('/valohai/inputs/case_to_account/case_to_account.csv', delimiter=";")
     payload = []
 
@@ -146,6 +147,76 @@ def aggregate_tasks():
                             temp_dict['instance_date'] = row['CreatedDate']
                             temp_dict['term'] = sublist[0]
                             temp_dict['type'] = 'task_' + field
+                # If temp dict is not empty than append to the final payload
+                if temp_dict:
+                    payload.append(temp_dict)
+
+    final_df = pd.DataFrame(payload)
+    final_df.to_csv('/valohai/outputs/tasks.csv', index=False)
+
+
+def aggregate(source: str, days_back=1):
+    payload = []
+    source_df = None
+    non_text_cols = None
+    case_to_account = {}
+    if source == 'tasks':
+        source_df = pd.read_csv('/valohai/inputs/tasks/loaded_source.csv')
+        non_text_cols = ['Id', 'AccountId', 'CreatedDate']
+    elif source == 'sessions':
+        source_df = pd.read_csv('/valohai/inputs/tasks/loaded_source.csv')
+        non_text_cols = ['Id', 'Account__c', 'Session_Date__c', 'RecordTypeId']
+    elif source == 'emails':
+        days_back = int(days_back)
+        load_data_s3("Data_Science/Text_Data/Salesforce/EmailMessage/", days_back=days_back)
+        source_df = pd.read_csv('/valohai/outputs/loaded_source.csv')
+        case_to_account_df = pd.read_csv('/valohai/inputs/case_to_account/case_to_account.csv', delimiter=";")
+
+        for index, row in case_to_account_df.iterrows():
+            case_to_account[row['id']] = [row['accountid'], row['name'], row['createddate']]
+
+        non_text_cols = ['Id', 'ParentId', 'Incoming', 'CreatedDate']
+
+    cols = list(source_df.columns)
+    fields = [x for x in cols if x not in non_text_cols]
+    for index, row in source_df.iterrows():
+        account_id = None
+        email_id = None
+        if source == 'emails':
+            email_id = row['Id']
+            case_id = row['ParentId'][:-3]
+            if case_id not in case_to_account:
+                continue
+            account_id = case_to_account[case_id][0]
+            if str(account_id) == 'nan':
+                continue
+
+            incoming = "incoming" if row['Incoming'] == 'true' else 'outgoing'
+        for field in fields:
+            for sublist in trigger_terms:
+                temp_dict = {}
+                for term in sublist:
+                    if not pd.isnull(row[field]):
+                        if term.lower() in row[field].lower():
+                            if source == 'tasks':
+                                temp_dict['account_id'] = row['AccountId']
+                                temp_dict['instance_id'] = row['Id']
+                                temp_dict['instance_date'] = row['CreatedDate']
+                                temp_dict['term'] = sublist[0]
+                                temp_dict['type'] = 'task_' + field
+                            elif source == 'sessions':
+                                temp_dict['account_id'] = row['Account__c']
+                                temp_dict['instance_id'] = row['Id']
+                                temp_dict['instance_date'] = row['Session_Date__c']
+                                temp_dict['term'] = sublist[0]
+                                temp_dict['type'] = 'session_' + field
+                            elif source == 'emails':
+                                temp_dict['account_id'] = account_id
+                                temp_dict['instance_id'] = email_id
+                                temp_dict['instance_date'] = row['CreatedDate']
+                                temp_dict['term'] = sublist[0]
+                                temp_dict['type'] = 'email_' + field + '_' + incoming
+
                 # If temp dict is not empty than append to the final payload
                 if temp_dict:
                     payload.append(temp_dict)
