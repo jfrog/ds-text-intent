@@ -64,7 +64,7 @@
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.aggregate('source="tasks"')'
+      - python -c 'import main; main.aggregate('source="tasksa"')'
     inputs:
       - name: tasks
         default: datum://017b25a6-a638-3d8c-2758-67abee4f1be4
