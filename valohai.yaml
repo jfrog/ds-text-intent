@@ -54,7 +54,7 @@
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.load_and_aggregate_emails('source="emails",days_back=10')'
+      - python -c 'import main; main.load_and_aggregate_emails('source=\"emails\",days_back=10')'
     inputs:
       - name: case_to_account
         default: datum://017cfae9-2470-1204-7bf0-4433d93f3b58
@@ -64,7 +64,7 @@
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.aggregate('source="tasksa"')'
+      - python -c 'import main; main.aggregate('source=\"tasks\"')'
     inputs:
       - name: tasks
         default: datum://017b25a6-a638-3d8c-2758-67abee4f1be4
@@ -74,7 +74,7 @@
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.aggregate('source="sessions"')'
+      - python -c 'import main; main.aggregate('source=\"sessions\"')'
     inputs:
       - name: sessions
         default: datum://017b2574-47d9-81f5-8179-07a28c2e0279
