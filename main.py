@@ -51,107 +51,8 @@ def load_data_from_s3(folder_name, days_back=1):
     load_data_s3(folder_name, days_back=days_back)
 
 
-def load_and_aggregate_emails(days_back=1):
-    days_back = int(days_back)
-    load_data_s3("Data_Science/Text_Data/Salesforce/EmailMessage/", days_back=days_back)
-    emails = pd.read_csv('/valohai/outputs/loaded_source.csv')
-    case_to_account_df = pd.read_csv('/valohai/inputs/case_to_account/case_to_account.csv', delimiter=";")
-    payload = []
-
-    case_to_account = {}
-    for index, row in case_to_account_df.iterrows():
-        case_to_account[row['id']] = [row['accountid'], row['name'], row['createddate']]
-
-    cols = list(emails.columns)
-    non_text_cols = ['Id', 'ParentId', 'Incoming', 'CreatedDate']
-    fields = [x for x in cols if x not in non_text_cols]
-    for index, row in emails.iterrows():
-        email_id = row['Id']
-        case_id = row['ParentId'][:-3]
-        if case_id not in case_to_account:
-            continue
-
-        account_id = case_to_account[case_id][0]
-
-        if str(account_id) == 'nan':
-            continue
-
-        incoming = "incoming" if row['Incoming'] == 'true' else 'outgoing'
-        for field in fields:
-            for sublist in trigger_terms:
-                temp_dict = {}
-                for term in sublist:
-                    if not pd.isna(row[field]):
-                        if term.lower() in row[field].lower():
-                            temp_dict['account_id'] = account_id
-                            temp_dict['instance_id'] = email_id
-                            temp_dict['instance_date'] = row['CreatedDate']
-                            temp_dict['term'] = sublist[0]
-                            temp_dict['type'] = 'email_' + field + '_' + incoming
-                # If temp dict is not empty than append to the final payload
-                if temp_dict:
-                    payload.append(temp_dict)
-
-    print(len(payload))
-    final_df = pd.DataFrame(payload)
-    final_df.to_csv('/valohai/outputs/emails.csv', index=False)
-
-
-def aggregate_sessions():
-    sessions = pd.read_csv('/valohai/inputs/sessions/loaded_source.csv')
-    payload = []
-
-    cols = list(sessions.columns)
-    print(cols)
-    non_text_cols = ['Id', 'Account__c', 'Session_Date__c', 'RecordTypeId']
-    fields = [x for x in cols if x not in non_text_cols]
-    for index, row in sessions.iterrows():
-        for field in fields:
-            for sublist in trigger_terms:
-                temp_dict = {}
-                for term in sublist:
-                    if not pd.isnull(row[field]):
-                        if term.lower() in row[field].lower():
-                            temp_dict['account_id'] = row['Account__c']
-                            temp_dict['instance_id'] = row['Id']
-                            temp_dict['instance_date'] = row['Session_Date__c']
-                            temp_dict['term'] = sublist[0]
-                            temp_dict['type'] = 'session_' + field
-                # If temp dict is not empty than append to the final payload
-                if temp_dict:
-                    payload.append(temp_dict)
-
-    final_df = pd.DataFrame(payload)
-    final_df.to_csv('/valohai/outputs/sessions.csv', index=False)
-
-
-def aggregate_tasks():
-    tasks = pd.read_csv('/valohai/inputs/tasks/loaded_source.csv')
-    payload = []
-
-    cols = list(tasks.columns)
-    print(cols)
-    non_text_cols = ['Id', 'AccountId', 'CreatedDate']
-    fields = [x for x in cols if x not in non_text_cols]
-    for index, row in tasks.iterrows():
-        for field in fields:
-            for sublist in trigger_terms:
-                temp_dict = {}
-                for term in sublist:
-
-                    if not pd.isnull(row[field]):
-                        if term in row[field]:
-                            temp_dict['account_id'] = row['AccountId']
-                            temp_dict['instance_id'] = row['Id']
-                            temp_dict['instance_date'] = row['CreatedDate']
-                            temp_dict['term'] = sublist[0]
-                            temp_dict['type'] = 'task_' + field
-                # If temp dict is not empty than append to the final payload
-                if temp_dict:
-                    payload.append(temp_dict)
-
-    final_df = pd.DataFrame(payload)
-    final_df.to_csv('/valohai/outputs/tasks.csv', index=False)
+def load_data_from_redshift(sql_file_name):
+    load_data_redshift(sql_file_name)
 
 
 def aggregate(source, days_back=1):
@@ -221,7 +122,7 @@ def aggregate(source, days_back=1):
                     payload.append(temp_dict)
 
     final_df = pd.DataFrame(payload)
-    final_df.to_csv('/valohai/outputs/tasks.csv', index=False)
+    final_df.to_csv('/valohai/outputs/' + source + '.csv', index=False)
 
 
 def concat_all():
@@ -247,10 +148,6 @@ def concat_all():
     if len(files_list) > 0:
         all_data = pd.concat(files_list)
         all_data.to_csv('/valohai/outputs/final.csv', index=False)
-
-
-def load_data_from_redshift(sql_file_name):
-    load_data_redshift(sql_file_name)
 
 
 def upload_to_redshift(table_name, append="0"):
@@ -296,3 +193,106 @@ def upload_to_redshift(table_name, append="0"):
     message = "Text Intent Project: The table " + table_name + " got updated with " + str(total_rows) + " rows!"
     send_slack_message(message)
     print(message)
+
+
+# def load_and_aggregate_emails(days_back=1):
+#     days_back = int(days_back)
+#     load_data_s3("Data_Science/Text_Data/Salesforce/EmailMessage/", days_back=days_back)
+#     emails = pd.read_csv('/valohai/outputs/loaded_source.csv')
+#     case_to_account_df = pd.read_csv('/valohai/inputs/case_to_account/case_to_account.csv', delimiter=";")
+#     payload = []
+#
+#     case_to_account = {}
+#     for index, row in case_to_account_df.iterrows():
+#         case_to_account[row['id']] = [row['accountid'], row['name'], row['createddate']]
+#
+#     cols = list(emails.columns)
+#     non_text_cols = ['Id', 'ParentId', 'Incoming', 'CreatedDate']
+#     fields = [x for x in cols if x not in non_text_cols]
+#     for index, row in emails.iterrows():
+#         email_id = row['Id']
+#         case_id = row['ParentId'][:-3]
+#         if case_id not in case_to_account:
+#             continue
+#
+#         account_id = case_to_account[case_id][0]
+#
+#         if str(account_id) == 'nan':
+#             continue
+#
+#         incoming = "incoming" if row['Incoming'] == 'true' else 'outgoing'
+#         for field in fields:
+#             for sublist in trigger_terms:
+#                 temp_dict = {}
+#                 for term in sublist:
+#                     if not pd.isna(row[field]):
+#                         if term.lower() in row[field].lower():
+#                             temp_dict['account_id'] = account_id
+#                             temp_dict['instance_id'] = email_id
+#                             temp_dict['instance_date'] = row['CreatedDate']
+#                             temp_dict['term'] = sublist[0]
+#                             temp_dict['type'] = 'email_' + field + '_' + incoming
+#                 # If temp dict is not empty than append to the final payload
+#                 if temp_dict:
+#                     payload.append(temp_dict)
+#
+#     print(len(payload))
+#     final_df = pd.DataFrame(payload)
+#     final_df.to_csv('/valohai/outputs/emails.csv', index=False)
+#
+#
+# def aggregate_sessions():
+#     sessions = pd.read_csv('/valohai/inputs/sessions/loaded_source.csv')
+#     payload = []
+#
+#     cols = list(sessions.columns)
+#     print(cols)
+#     non_text_cols = ['Id', 'Account__c', 'Session_Date__c', 'RecordTypeId']
+#     fields = [x for x in cols if x not in non_text_cols]
+#     for index, row in sessions.iterrows():
+#         for field in fields:
+#             for sublist in trigger_terms:
+#                 temp_dict = {}
+#                 for term in sublist:
+#                     if not pd.isnull(row[field]):
+#                         if term.lower() in row[field].lower():
+#                             temp_dict['account_id'] = row['Account__c']
+#                             temp_dict['instance_id'] = row['Id']
+#                             temp_dict['instance_date'] = row['Session_Date__c']
+#                             temp_dict['term'] = sublist[0]
+#                             temp_dict['type'] = 'session_' + field
+#                 # If temp dict is not empty than append to the final payload
+#                 if temp_dict:
+#                     payload.append(temp_dict)
+#
+#     final_df = pd.DataFrame(payload)
+#     final_df.to_csv('/valohai/outputs/sessions.csv', index=False)
+#
+#
+# def aggregate_tasks():
+#     tasks = pd.read_csv('/valohai/inputs/tasks/loaded_source.csv')
+#     payload = []
+#
+#     cols = list(tasks.columns)
+#     print(cols)
+#     non_text_cols = ['Id', 'AccountId', 'CreatedDate']
+#     fields = [x for x in cols if x not in non_text_cols]
+#     for index, row in tasks.iterrows():
+#         for field in fields:
+#             for sublist in trigger_terms:
+#                 temp_dict = {}
+#                 for term in sublist:
+#
+#                     if not pd.isnull(row[field]):
+#                         if term in row[field]:
+#                             temp_dict['account_id'] = row['AccountId']
+#                             temp_dict['instance_id'] = row['Id']
+#                             temp_dict['instance_date'] = row['CreatedDate']
+#                             temp_dict['term'] = sublist[0]
+#                             temp_dict['type'] = 'task_' + field
+#                 # If temp dict is not empty than append to the final payload
+#                 if temp_dict:
+#                     payload.append(temp_dict)
+#
+#     final_df = pd.DataFrame(payload)
+#     final_df.to_csv('/valohai/outputs/tasks.csv', index=False)
