@@ -55,30 +55,6 @@ def load_data_s3(source_folder, days_back=1):
     day = str(since_date.day)
     if days_back < 1:
         print("Minimum days_back parameter is 1! please change the code")
-    # elif days_back == 1:
-    #     full_folder = source_folder + year + '/' + month + '/' + day
-    #     object_name = None
-    #     for file in your_bucket.objects.all():
-    #         if full_folder in file.key:
-    #             object_name = file.key
-    #
-    #     print(year)
-    #     print(month)
-    #     print(day)
-    #     print(full_folder)
-    #     print(object_name)
-    #     if not object_name:
-    #         print("Folder for that date does not exist!")
-    #     else:
-    #         object = your_bucket.Object(object_name)
-    #         object.download_file(OUTPUT_PATH + '/loaded_source.csv')
-    #         total_df = pd.read_csv(OUTPUT_PATH + '/loaded_source.csv',
-    #                               delimiter='\x01',
-    #                               lineterminator='\x04',
-    #                               usecols=df_columns,
-    #                               encoding='utf-8',
-    #                               skip_blank_lines=True)
-
     else:
         object_list = []
         for file in your_bucket.objects.all():
