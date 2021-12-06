@@ -47,12 +47,12 @@ def send_slack_message(message):
         print("Failed to sent message to data-science slack channel. please check the Workato recipe related to this.")
 
 
-def load_data_from_s3(folder_name, days_back=1):
-    load_data_s3(folder_name, days_back=days_back)
-
-
 def load_data_from_redshift(sql_file_name):
     load_data_redshift(sql_file_name)
+
+
+def load_data_from_s3(folder_name, days_back=1):
+    load_data_s3(folder_name, days_back=days_back)
 
 
 def aggregate(source, days_back=1):
@@ -71,7 +71,6 @@ def aggregate(source, days_back=1):
         load_data_s3("Data_Science/Text_Data/Salesforce/EmailMessage/", days_back=days_back)
         source_df = pd.read_csv('/valohai/outputs/loaded_source.csv')
         case_to_account_df = pd.read_csv('/valohai/inputs/case_to_account/case_to_account.csv', delimiter=";")
-
         for index, row in case_to_account_df.iterrows():
             case_to_account[row['id']] = [row['accountid'], row['name'], row['createddate']]
 
