@@ -36,7 +36,6 @@ def load_data_s3(source_folder, days_back=1):
                       region_name=AWS_REGION)
     s3 = session.resource('s3')
     your_bucket = s3.Bucket('prod-is-data-science-bucket')
-
     if 'EmailMessage' in source_folder:
         df_columns = ['Id', 'ParentId',
                       'Subject', 'TextBody', 'Incoming', 'CreatedDate']
@@ -64,15 +63,10 @@ def load_data_s3(source_folder, days_back=1):
 
         first_obj = True
         for obj in object_list:
-
             year_str = int(str(obj).split('/')[4])
             month_str = int(str(obj).split('/')[5])
             day_str = int(str(obj).split('/')[6])
-            if year_str < int(year):
-                continue
-            elif month_str < int(month):
-                continue
-            elif day_str < int(day):
+            if year_str < int(year) or month_str < int(month) or day_str < int(day):
                 continue
 
             curr_obj = your_bucket.Object(obj)
