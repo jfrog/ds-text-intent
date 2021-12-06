@@ -52,7 +52,7 @@ def load_data_s3(source_folder, days_back=1):
     since_date = datetime.utcnow().date() - timedelta(days=days_back)
     year = str(since_date.year)
     month = str(since_date.month)
-    day = str(since_date.day)
+    day = str(since_date.day - 1)
     if days_back < 1:
         print("Minimum days_back parameter is 1! please change the code")
     elif days_back == 1:
