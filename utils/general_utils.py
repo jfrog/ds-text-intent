@@ -49,7 +49,7 @@ def load_data_s3(source_folder, days_back=1):
 
     total_df = None
     since_date = datetime.utcnow().date() - timedelta(days=days_back)
-    since_date = datetime.date(since_date)
+    print(since_date)
     if days_back < 1:
         print("Minimum days_back parameter is 1! please change the code")
     else:
@@ -61,7 +61,7 @@ def load_data_s3(source_folder, days_back=1):
 
         first_obj = True
         for obj in object_list:
-            currdate = datetime.strptime(str(obj).split('/')[4]+'/'+str(obj).split('/')[5]+'/'+str(obj).split('/')[6], '%Y/%m/%d')
+            currdate = datetime.strptime(str(obj).split('/')[4]+'/'+str(obj).split('/')[5]+'/'+str(obj).split('/')[6], '%Y/%m/%d').date()
             if currdate < since_date:
                 continue
 
