@@ -66,11 +66,7 @@ def load_data_s3(source_folder, days_back=1):
             year_str = int(str(obj).split('/')[4])
             month_str = int(str(obj).split('/')[5])
             day_str = int(str(obj).split('/')[6])
-            if year_str < int(year):
-                continue
-            if month_str < int(month):
-                continue
-            if day_str < int(day):
+            if year_str < int(year) or (year_str >= int(year) and month_str < int(month)) or (year_str >= int(year) and month_str >= int(month) and day_str < int(day)):
                 continue
 
             curr_obj = your_bucket.Object(obj)
