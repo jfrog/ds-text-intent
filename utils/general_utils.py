@@ -49,6 +49,7 @@ def load_data_s3(source_folder, days_back=1):
 
     total_df = None
     since_date = datetime.utcnow().date() - timedelta(days=days_back)
+    since_date = datetime.date(since_date)
     if days_back < 1:
         print("Minimum days_back parameter is 1! please change the code")
     else:
