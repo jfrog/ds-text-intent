@@ -49,9 +49,6 @@ def load_data_s3(source_folder, days_back=1):
 
     total_df = None
     since_date = datetime.utcnow().date() - timedelta(days=days_back)
-    year = str(since_date.year)
-    month = str(since_date.month)
-    day = str(since_date.day)
     if days_back < 1:
         print("Minimum days_back parameter is 1! please change the code")
     else:
@@ -63,14 +60,9 @@ def load_data_s3(source_folder, days_back=1):
 
         first_obj = True
         for obj in object_list:
-            year_str = int(str(obj).split('/')[4])
-            month_str = int(str(obj).split('/')[5])
-            day_str = int(str(obj).split('/')[6])
-            if year_str < int(year):
+            currdate = datetime.strptime(str(obj).split('/')[4]+'/'+str(obj).split('/')[5]+'/'+str(obj).split('/')[6], '%Y/%m/%d')
+            if currdate < since_date:
                 continue
-            elif month_str < int(month):
-                continue
-            elif day_str < int(day):
 
             curr_obj = your_bucket.Object(obj)
             curr_obj.download_file(OUTPUT_PATH + '/curr_sheet.csv')
