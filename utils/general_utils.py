@@ -26,7 +26,13 @@ def explore_bucket_s3():
         print(file)
 
 
+# Loads data from S3, written in a way so it can pull for multiple amount of days
 def load_data_s3(source_folder, days_back=1):
+    """
+    :param source_folder: a string that dictates what is the source, possible values are 'EmailMessage', 'TechnicalInfo' and 'Task'.
+    :param days_back: How many days back should the method load the data from, the default is 1 day back.
+    :return: the final dataframe of the loaded source for the stated dataframe. It is also saved in the outputs of the valohai node.
+    """
     AWS_KEY = os.getenv('AWS_KEY')
     AWS_SECRET = os.getenv('AWS_SECRET')
     AWS_REGION = os.getenv('AWS_REGION')
@@ -61,7 +67,8 @@ def load_data_s3(source_folder, days_back=1):
 
         first_obj = True
         for obj in object_list:
-            currdate = datetime.strptime(str(obj).split('/')[4]+'/'+str(obj).split('/')[5]+'/'+str(obj).split('/')[6], '%Y/%m/%d').date()
+            currdate = datetime.strptime(
+                str(obj).split('/')[4] + '/' + str(obj).split('/')[5] + '/' + str(obj).split('/')[6], '%Y/%m/%d').date()
             if currdate < since_date:
                 continue
 

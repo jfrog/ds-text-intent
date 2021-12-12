@@ -20,7 +20,8 @@ trigger_terms = [['high availability', 'high-availability', ' ha ', ' ha.', ' ha
                  ['permission handle',
                   'permissions handle', 'permission handling', 'permissions handling'],
                  ['distribution', 'docker', 'generic', 'yum'], ['Storage Sharding', 'Storage-Sharding', 'Sharding'],
-                 ['Xray', 'x-ray', 'x ray', 'x.ray', 'Security', 'vdoo', 'v-doo', 'v doo', 'CVE', 'VulnDB', 'Nvd', 'Xuc', 'Scanning', 'vulnerability', 'JXray'],
+                 ['Xray', 'x-ray', 'x ray', 'x.ray', 'Security', 'vdoo', 'v-doo', 'v doo', 'CVE', 'VulnDB', 'Nvd',
+                  'Xuc', 'Scanning', 'vulnerability', 'JXray'],
                  ['compliance', 'Ciso', 'Devsecops'],
                  ['Cyber'], ['Budget', 'attrition', 'budgeting', 'paying', 'expansive', 'price'],
                  ['SLA', 'frustration', 'complains', 'complaint', 'Negative', 'risk'],
@@ -36,6 +37,10 @@ trigger_terms = [['high availability', 'high-availability', ' ha ', ' ha.', ' ha
 
 
 def send_slack_message(message):
+    """
+    :param message: The message that will be sent to the shared data_science slack channel if the goal is achieved
+    :return: Nothing.
+    """
     now_str = str(datetime.today())
     dict_for_post = {'Message': message,
                      'Created_Date': now_str}
@@ -48,14 +53,29 @@ def send_slack_message(message):
 
 
 def load_data_from_redshift(sql_file_name):
+    """
+    :param sql_file_name: The name of the sql file to be called
+    :return: Nothing.
+    """
     load_data_redshift(sql_file_name)
 
 
 def load_data_from_s3(folder_name, days_back=1):
+    """
+    :param folder_name: a string that dictates what is the source, possible values are 'EmailMessage', 'TechnicalInfo' and 'Task'.
+    :param days_back: How many days back should the method load the data from, the default is 1 day back.
+    :return: Nothing.
+    """
     load_data_s3(folder_name, days_back=days_back)
 
 
+# Aggregates a raw dataframe into the final structure of results that we want.
 def aggregate(source, days_back=1):
+    """
+    :param source: a string that dictates what is the source, possible values are 'emails', 'sessions' and 'tasks'.
+    :param days_back: Amount of days back to pull (in case the method is called for email, we also load the data in this method and not only aggregate).
+    :return: Nothing
+    """
     payload = []
     source_df = None
     non_text_cols = None
@@ -124,7 +144,12 @@ def aggregate(source, days_back=1):
     final_df.to_csv('/valohai/outputs/' + source + '.csv', index=False)
 
 
+# Concatenating all the aggregated dataframes into one final output
 def concat_all():
+    """
+    All the inputs are being received from the valohai pipeline.
+    :return: Nothing
+    """
     files_list = []
     try:
         emails = pd.read_csv('/valohai/inputs/emails/emails.csv')
@@ -150,6 +175,11 @@ def concat_all():
 
 
 def upload_to_redshift(table_name, append="0"):
+    """
+    :param table_name: The table name to be updated
+    :param append:
+    :return:
+    """
     append = bool(int(append))
     dbname = os.getenv('dbname')
     host = os.getenv('host')
@@ -192,106 +222,3 @@ def upload_to_redshift(table_name, append="0"):
     message = "Text Intent Project: The table " + table_name + " got updated with " + str(total_rows) + " rows!"
     send_slack_message(message)
     print(message)
-
-
-# def load_and_aggregate_emails(days_back=1):
-#     days_back = int(days_back)
-#     load_data_s3("Data_Science/Text_Data/Salesforce/EmailMessage/", days_back=days_back)
-#     emails = pd.read_csv('/valohai/outputs/loaded_source.csv')
-#     case_to_account_df = pd.read_csv('/valohai/inputs/case_to_account/case_to_account.csv', delimiter=";")
-#     payload = []
-#
-#     case_to_account = {}
-#     for index, row in case_to_account_df.iterrows():
-#         case_to_account[row['id']] = [row['accountid'], row['name'], row['createddate']]
-#
-#     cols = list(emails.columns)
-#     non_text_cols = ['Id', 'ParentId', 'Incoming', 'CreatedDate']
-#     fields = [x for x in cols if x not in non_text_cols]
-#     for index, row in emails.iterrows():
-#         email_id = row['Id']
-#         case_id = row['ParentId'][:-3]
-#         if case_id not in case_to_account:
-#             continue
-#
-#         account_id = case_to_account[case_id][0]
-#
-#         if str(account_id) == 'nan':
-#             continue
-#
-#         incoming = "incoming" if row['Incoming'] == 'true' else 'outgoing'
-#         for field in fields:
-#             for sublist in trigger_terms:
-#                 temp_dict = {}
-#                 for term in sublist:
-#                     if not pd.isna(row[field]):
-#                         if term.lower() in row[field].lower():
-#                             temp_dict['account_id'] = account_id
-#                             temp_dict['instance_id'] = email_id
-#                             temp_dict['instance_date'] = row['CreatedDate']
-#                             temp_dict['term'] = sublist[0]
-#                             temp_dict['type'] = 'email_' + field + '_' + incoming
-#                 # If temp dict is not empty than append to the final payload
-#                 if temp_dict:
-#                     payload.append(temp_dict)
-#
-#     print(len(payload))
-#     final_df = pd.DataFrame(payload)
-#     final_df.to_csv('/valohai/outputs/emails.csv', index=False)
-#
-#
-# def aggregate_sessions():
-#     sessions = pd.read_csv('/valohai/inputs/sessions/loaded_source.csv')
-#     payload = []
-#
-#     cols = list(sessions.columns)
-#     print(cols)
-#     non_text_cols = ['Id', 'Account__c', 'Session_Date__c', 'RecordTypeId']
-#     fields = [x for x in cols if x not in non_text_cols]
-#     for index, row in sessions.iterrows():
-#         for field in fields:
-#             for sublist in trigger_terms:
-#                 temp_dict = {}
-#                 for term in sublist:
-#                     if not pd.isnull(row[field]):
-#                         if term.lower() in row[field].lower():
-#                             temp_dict['account_id'] = row['Account__c']
-#                             temp_dict['instance_id'] = row['Id']
-#                             temp_dict['instance_date'] = row['Session_Date__c']
-#                             temp_dict['term'] = sublist[0]
-#                             temp_dict['type'] = 'session_' + field
-#                 # If temp dict is not empty than append to the final payload
-#                 if temp_dict:
-#                     payload.append(temp_dict)
-#
-#     final_df = pd.DataFrame(payload)
-#     final_df.to_csv('/valohai/outputs/sessions.csv', index=False)
-#
-#
-# def aggregate_tasks():
-#     tasks = pd.read_csv('/valohai/inputs/tasks/loaded_source.csv')
-#     payload = []
-#
-#     cols = list(tasks.columns)
-#     print(cols)
-#     non_text_cols = ['Id', 'AccountId', 'CreatedDate']
-#     fields = [x for x in cols if x not in non_text_cols]
-#     for index, row in tasks.iterrows():
-#         for field in fields:
-#             for sublist in trigger_terms:
-#                 temp_dict = {}
-#                 for term in sublist:
-#
-#                     if not pd.isnull(row[field]):
-#                         if term in row[field]:
-#                             temp_dict['account_id'] = row['AccountId']
-#                             temp_dict['instance_id'] = row['Id']
-#                             temp_dict['instance_date'] = row['CreatedDate']
-#                             temp_dict['term'] = sublist[0]
-#                             temp_dict['type'] = 'task_' + field
-#                 # If temp dict is not empty than append to the final payload
-#                 if temp_dict:
-#                     payload.append(temp_dict)
-#
-#     final_df = pd.DataFrame(payload)
-#     final_df.to_csv('/valohai/outputs/tasks.csv', index=False)
