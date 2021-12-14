@@ -10,21 +10,21 @@
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.load_data_from_s3('\"Data_Science\/Text_Data\/Salesforce\/Task\/\",days_back="1460"')'
+      - python -c 'import main; main.load_data_from_s3('\"Data_Science\/Text_Data\/Salesforce\/Task\/\",days_back="1"')'
 
 - step:
     name: load_data_sessions
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.load_data_from_s3('\"Data_Science\/Text_Data\/Salesforce\/TechnicalInfo\/\",days_back="1460"')'
+      - python -c 'import main; main.load_data_from_s3('\"Data_Science\/Text_Data\/Salesforce\/TechnicalInfo\/\",days_back="1"')'
 
 - step:
     name: load_and_aggregate_emails
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.aggregate('source=\"emails\",days_back=1460')'
+      - python -c 'import main; main.aggregate('source=\"emails\",days_back=1')'
     inputs:
       - name: case_to_account
         default: datum://017cfae9-2470-1204-7bf0-4433d93f3b58
@@ -68,7 +68,7 @@
     image: yotamljfrog/ds-general-image:0.1
     command:
       - pip install -r requirements.txt
-      - python -c 'import main; main.upload_to_redshift('\"simple_intent_alltime\",append="0"')'
+      - python -c 'import main; main.upload_to_redshift('\"simple_intent_alltime\",append="1"')'
     inputs:
       - name: final
         default: datum://017b2770-cfe0-e51c-37e1-2931e066483a
