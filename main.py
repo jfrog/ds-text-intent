@@ -33,7 +33,9 @@ trigger_terms = [['high availability', 'high-availability', ' ha ', ' ha.', ' ha
                   'Fortify', 'FOSSA', 'Kiuwan', 'NeuVector', 'Nexus IQ', 'Open Source Guardian',
                   'Prisma Cloud (formerly Twistlock)',
                   'Qualys', 'ShiftLeft Scan', 'Snyk', 'Tenable', 'Trivy', 'Veracode', 'whitehat', 'White Hat Security',
-                  'WhiteSource']]
+                  'WhiteSource'],
+                   ['Support', 'ESL', 'Help', 'HTS'], ['Securiy', 'Vulnerability Scanning', 'CVE', 'Vuln'], 
+                   ['Distribution', 'CDN', 'PDN', 'Edge', 'latency', 'bandwidth', 'network']]]
 
 
 def send_slack_message(message):
