@@ -179,7 +179,7 @@
         step: load_data_tasks_history
       - name: load_data_sessions_history
         type: execution
-        step: load_data_sessions_history_history
+        step: load_data_sessions_history
       - name: load_and_aggregate_emails_history
         type: execution
         step: load_and_aggregate_emails_history
