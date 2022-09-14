@@ -223,5 +223,5 @@ def upload_to_redshift(table_name, append="0"):
         iter += 1
 
     message = "Text Intent Project: The table " + table_name + " got updated with " + str(total_rows) + " rows!"
-    send_slack_message(message)
+    #send_slack_message(message)
     print(message)
