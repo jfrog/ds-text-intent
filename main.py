@@ -101,7 +101,8 @@ def aggregate(source, days_back=1):
 
     cols = list(source_df.columns)
     fields = [x for x in cols if x not in non_text_cols]
-    source_df['ParentId'] = source_df['ParentId'].astype(str)
+    if source == 'emails':
+        source_df['ParentId'] = source_df['ParentId'].astype(str)
     for index, row in source_df.iterrows():
         account_id = None
         email_id = None
