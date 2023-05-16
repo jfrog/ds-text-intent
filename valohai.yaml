@@ -1,6 +1,7 @@
 - step:
     name: load_case_to_account
     image: yotamljfrog/ds-general-image:0.1
+    environment: c5a.xlarge
     command:
       - pip install -r requirements.txt
       - python -c 'import main; main.load_data_from_redshift("case_to_account.sql")'
@@ -8,6 +9,7 @@
 - step:
     name: load_data_tasks
     image: yotamljfrog/ds-general-image:0.1
+    environment: c5a.xlarge
     command:
       - pip install -r requirements.txt
       - python -c 'import main; main.load_data_from_s3('\"Data_Science\/Text_Data\/Salesforce\/Task\/\",days_back="1"')'
@@ -22,6 +24,7 @@
 - step:
     name: load_data_sessions
     image: yotamljfrog/ds-general-image:0.1
+    environment: c5a.xlarge
     command:
       - pip install -r requirements.txt
       - python -c 'import main; main.load_data_from_s3('\"Data_Science\/Text_Data\/Salesforce\/TechnicalInfo\/\",days_back="1"')'
@@ -30,6 +33,7 @@
 - step:
     name: load_data_sessions_history
     image: yotamljfrog/ds-general-image:0.1
+    environment: c5a.xlarge
     command:
       - pip install -r requirements.txt
       - python -c 'import main; main.load_data_from_s3('\"Data_Science\/Text_Data\/Salesforce\/TechnicalInfo\/\",days_back="1500"')'
@@ -38,6 +42,7 @@
 - step:
     name: load_and_aggregate_emails
     image: yotamljfrog/ds-general-image:0.1
+    environment: c5a.xlarge
     command:
       - pip install -r requirements.txt
       - python -c 'import main; main.aggregate('source=\"emails\",days_back=1')'
@@ -48,6 +53,7 @@
 - step:
     name: load_and_aggregate_emails_history
     image: yotamljfrog/ds-general-image:0.1
+    environment: c5a.xlarge
     command:
       - pip install -r requirements.txt
       - python -c 'import main; main.aggregate('source=\"emails\",days_back=1500')'
@@ -59,6 +65,7 @@
 - step:
     name: aggregate_tasks
     image: yotamljfrog/ds-general-image:0.1
+    environment: c5a.xlarge
     command:
       - pip install -r requirements.txt
       - python -c 'import main; main.aggregate('source=\"tasks\"')'
@@ -69,6 +76,7 @@
 - step:
     name: aggregate_sessions
     image: yotamljfrog/ds-general-image:0.1
+    environment: c5a.xlarge
     command:
       - pip install -r requirements.txt
       - python -c 'import main; main.aggregate('source=\"sessions\"')'
@@ -77,8 +85,35 @@
         default: datum://017b2574-47d9-81f5-8179-07a28c2e0279
 
 - step:
+    name: aggregate_emails
+    image: yotamljfrog/ds-general-image:0.1
+    environment: c5a.xlarge
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.aggregate_emails()'
+    inputs:
+      - name: case_to_account
+        default: datum://017b25c4-f56e-31f7-af18-231ca19c32f7
+      - name: emails
+        default: datum://017b2608-8022-dff2-29b9-8bfd77c0622f
+
+- step:
+    name: load_and_aggregate_emails
+    image: yotamljfrog/ds-general-image:0.1
+    environment: c5a.xlarge
+    command:
+      - pip install -r requirements.txt
+      - python -c 'import main; main.load_and_aggregate_emails()'
+    inputs:
+      - name: case_to_account
+        default: datum://017b25c4-f56e-31f7-af18-231ca19c32f7
+
+
+
+- step:
     name: concat_all
     image: yotamljfrog/ds-general-image:0.1
+    environment: c5a.xlarge
     command:
       - pip install -r requirements.txt
       - python -c 'import main; main.concat_all()'
@@ -93,6 +128,7 @@
 - step:
     name: upload_to_redshift
     image: yotamljfrog/ds-general-image:0.1
+    environment: c5a.xlarge
     command:
       - pip install -r requirements.txt
       - python -c 'import main; main.upload_to_redshift('\"simple_intent_alltime\",append="1"')'
@@ -103,6 +139,7 @@
 - step:
     name: upload_to_redshift_all_time
     image: yotamljfrog/ds-general-image:0.1
+    environment: c5a.xlarge
     command:
       - pip install -r requirements.txt
       - python -c 'import main; main.upload_to_redshift('\"simple_intent_alltime\",append="0"')'
@@ -155,13 +192,13 @@
           inputs:
             - name: final
     edges:
-      - [load_case_to_account.output.*.csv, load_and_aggregate_emails.inputs.case_to_account]
-      - [load_data_tasks.output.*.csv, aggregate_tasks.inputs.tasks]
-      - [load_data_sessions.output.*.csv, aggregate_sessions.inputs.sessions]
-      - [load_and_aggregate_emails.output.*.csv, concat_all.inputs.emails]
-      - [aggregate_tasks.output.*.csv, concat_all.inputs.tasks]
-      - [aggregate_sessions.output.*.csv, concat_all.inputs.sessions]
-      - [concat_all.output.*.csv, upload_to_redshift.inputs.final]
+      - [load_case_to_account.output.*.csv, load_and_aggregate_emails.input.case_to_account]
+      - [load_data_tasks.output.*.csv, aggregate_tasks.input.tasks]
+      - [load_data_sessions.output.*.csv, aggregate_sessions.input.sessions]
+      - [load_and_aggregate_emails.output.*.csv, concat_all.input.emails]
+      - [aggregate_tasks.output.*.csv, concat_all.input.tasks]
+      - [aggregate_sessions.output.*.csv, concat_all.input.sessions]
+      - [concat_all.output.*.csv, upload_to_redshift.input.final]
 
 
 
@@ -213,13 +250,13 @@
           inputs:
             - name: final
     edges:
-      - [load_case_to_account.output.*.csv, load_and_aggregate_emails_history.inputs.case_to_account]
-      - [load_data_tasks_history.output.*.csv, aggregate_tasks.inputs.tasks]
-      - [load_data_sessions_history.output.*.csv, aggregate_sessions.inputs.sessions]
-      - [load_and_aggregate_emails_history.output.*.csv, concat_all.inputs.emails]
-      - [aggregate_tasks.output.*.csv, concat_all.inputs.tasks]
-      - [aggregate_sessions.output.*.csv, concat_all.inputs.sessions]
-      - [concat_all.output.*.csv, upload_to_redshift_all_time.inputs.final]
+      - [load_case_to_account.output.*.csv, load_and_aggregate_emails_history.input.case_to_account]
+      - [load_data_tasks_history.output.*.csv, aggregate_tasks.input.tasks]
+      - [load_data_sessions_history.output.*.csv, aggregate_sessions.input.sessions]
+      - [load_and_aggregate_emails_history.output.*.csv, concat_all.input.emails]
+      - [aggregate_tasks.output.*.csv, concat_all.input.tasks]
+      - [aggregate_sessions.output.*.csv, concat_all.input.sessions]
+      - [concat_all.output.*.csv, upload_to_redshift_all_time.input.final]
 
 
 
