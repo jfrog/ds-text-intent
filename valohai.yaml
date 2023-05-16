@@ -98,18 +98,6 @@
       - name: emails
         default: datum://017b2608-8022-dff2-29b9-8bfd77c0622f
 
-- step:
-    name: load_and_aggregate_emails
-    image: yotamljfrog/ds-general-image:0.1
-    environment: c5a-xlarge
-    command:
-      - pip install -r requirements.txt
-      - python -c 'import main; main.load_and_aggregate_emails()'
-    inputs:
-      - name: case_to_account
-        default: datum://017b25c4-f56e-31f7-af18-231ca19c32f7
-
-
 
 - step:
     name: concat_all
