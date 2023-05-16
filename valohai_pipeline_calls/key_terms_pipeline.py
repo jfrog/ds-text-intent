@@ -68,8 +68,8 @@ resp = requests.request(
                 "name": "load_case_to_account",
                 "type": "execution",
                 "template": {
-                    "environment": "01742a18-07ca-75b6-1a1f-f8cc93b058a0",
-                    "commit": "e45337bc1c59ee76715cfec9b2b6ba49b28dcb5f",
+                    "environment": "01742a18-656d-faec-4cb6-acb1d06aa5c5",
+                    "commit": "prod",
                     "step": "load_case_to_account",
                     "image": "yotamljfrog/ds-general-image:0.1",
                     "command": "pip install -r requirements.txt\npython -c 'import main; main.load_data_from_redshift(\"case_to_account.sql\")'",
@@ -77,69 +77,89 @@ resp = requests.request(
                     "parameters": {},
                     "runtime_config": {},
                     "inherit_environment_variables": True,
+                    "environment_variable_groups": [],
+                    "tags": [
+                        "prod"
+                    ],
                     "time_limit": 0,
                     "environment_variables": {}
-                }
+                },
+                "on_error": "stop-all"
             },
             {
                 "name": "load_data_tasks",
                 "type": "execution",
                 "template": {
-                    "environment": "01742a18-07ca-75b6-1a1f-f8cc93b058a0",
-                    "commit": "e45337bc1c59ee76715cfec9b2b6ba49b28dcb5f",
+                    "environment": "01742a18-656d-faec-4cb6-acb1d06aa5c5",
+                    "commit": "prod",
                     "step": "load_data_tasks",
                     "image": "yotamljfrog/ds-general-image:0.1",
-                    "command": "pip install -r requirements.txt\npython -c 'import main; main.load_data_from_s3('\\\"Data_Science\\/Text_Data\\/Salesforce\\/Task\\/\\\",days_back=\"3\"')'",
+                    "command": "pip install -r requirements.txt\npython -c 'import main; main.load_data_from_s3('\\\"Data_Science\\/Text_Data\\/Salesforce\\/Task\\/\\\",days_back=\"1\"')'",
                     "inputs": {},
                     "parameters": {},
                     "runtime_config": {},
                     "inherit_environment_variables": True,
+                    "environment_variable_groups": [],
+                    "tags": [
+                        "prod"
+                    ],
                     "time_limit": 0,
                     "environment_variables": {}
-                }
+                },
+                "on_error": "stop-all"
             },
             {
                 "name": "load_data_sessions",
                 "type": "execution",
                 "template": {
-                    "environment": "01742a18-07ca-75b6-1a1f-f8cc93b058a0",
-                    "commit": "e45337bc1c59ee76715cfec9b2b6ba49b28dcb5f",
+                    "environment": "01742a18-656d-faec-4cb6-acb1d06aa5c5",
+                    "commit": "prod",
                     "step": "load_data_sessions",
                     "image": "yotamljfrog/ds-general-image:0.1",
-                    "command": "pip install -r requirements.txt\npython -c 'import main; main.load_data_from_s3('\\\"Data_Science\\/Text_Data\\/Salesforce\\/TechnicalInfo\\/\\\",days_back=\"3\"')'",
+                    "command": "pip install -r requirements.txt\npython -c 'import main; main.load_data_from_s3('\\\"Data_Science\\/Text_Data\\/Salesforce\\/TechnicalInfo\\/\\\",days_back=\"1\"')'",
                     "inputs": {},
                     "parameters": {},
                     "runtime_config": {},
                     "inherit_environment_variables": True,
+                    "environment_variable_groups": [],
+                    "tags": [
+                        "prod"
+                    ],
                     "time_limit": 0,
                     "environment_variables": {}
-                }
+                },
+                "on_error": "stop-all"
             },
             {
                 "name": "load_and_aggregate_emails",
                 "type": "execution",
                 "template": {
-                    "environment": "01742a18-07ca-75b6-1a1f-f8cc93b058a0",
-                    "commit": "e45337bc1c59ee76715cfec9b2b6ba49b28dcb5f",
+                    "environment": "01742a18-656d-faec-4cb6-acb1d06aa5c5",
+                    "commit": "prod",
                     "step": "load_and_aggregate_emails",
                     "image": "yotamljfrog/ds-general-image:0.1",
-                    "command": "pip install -r requirements.txt\npython -c 'import main; main.aggregate('source=\\\"emails\\\",days_back=3')'",
+                    "command": "pip install -r requirements.txt\npython -c 'import main; main.load_and_aggregate_emails()'",
                     "inputs": {
                         "case_to_account": []
                     },
                     "parameters": {},
                     "runtime_config": {},
                     "inherit_environment_variables": True,
+                    "environment_variable_groups": [],
+                    "tags": [
+                        "prod"
+                    ],
                     "time_limit": 0,
                     "environment_variables": {}
-                }
+                },
+                "on_error": "stop-all"
             },
             {
                 "name": "aggregate_sessions",
                 "type": "execution",
                 "template": {
-                    "environment": "01742a18-07ca-75b6-1a1f-f8cc93b058a0",
-                    "commit": "e45337bc1c59ee76715cfec9b2b6ba49b28dcb5f",
+                    "environment": "01742a18-656d-faec-4cb6-acb1d06aa5c5",
+                    "commit": "prod",
                     "step": "aggregate_sessions",
                     "image": "yotamljfrog/ds-general-image:0.1",
                     "command": "pip install -r requirements.txt\npython -c 'import main; main.aggregate('source=\\\"sessions\\\"')'",
@@ -149,16 +169,21 @@ resp = requests.request(
                     "parameters": {},
                     "runtime_config": {},
                     "inherit_environment_variables": True,
+                    "environment_variable_groups": [],
+                    "tags": [
+                        "prod"
+                    ],
                     "time_limit": 0,
                     "environment_variables": {}
-                }
+                },
+                "on_error": "stop-all"
             },
             {
                 "name": "aggregate_tasks",
                 "type": "execution",
                 "template": {
-                    "environment": "01742a18-07ca-75b6-1a1f-f8cc93b058a0",
-                    "commit": "e45337bc1c59ee76715cfec9b2b6ba49b28dcb5f",
+                    "environment": "01742a18-656d-faec-4cb6-acb1d06aa5c5",
+                    "commit": "prod",
                     "step": "aggregate_tasks",
                     "image": "yotamljfrog/ds-general-image:0.1",
                     "command": "pip install -r requirements.txt\npython -c 'import main; main.aggregate('source=\\\"tasks\\\"')'",
@@ -168,16 +193,21 @@ resp = requests.request(
                     "parameters": {},
                     "runtime_config": {},
                     "inherit_environment_variables": True,
+                    "environment_variable_groups": [],
+                    "tags": [
+                        "prod"
+                    ],
                     "time_limit": 0,
                     "environment_variables": {}
-                }
+                },
+                "on_error": "stop-all"
             },
             {
                 "name": "concat_all",
                 "type": "execution",
                 "template": {
-                    "environment": "01742a18-07ca-75b6-1a1f-f8cc93b058a0",
-                    "commit": "e45337bc1c59ee76715cfec9b2b6ba49b28dcb5f",
+                    "environment": "01742a18-656d-faec-4cb6-acb1d06aa5c5",
+                    "commit": "prod",
                     "step": "concat_all",
                     "image": "yotamljfrog/ds-general-image:0.1",
                     "command": "pip install -r requirements.txt\npython -c 'import main; main.concat_all()'",
@@ -189,16 +219,21 @@ resp = requests.request(
                     "parameters": {},
                     "runtime_config": {},
                     "inherit_environment_variables": True,
+                    "environment_variable_groups": [],
+                    "tags": [
+                        "prod"
+                    ],
                     "time_limit": 0,
                     "environment_variables": {}
-                }
+                },
+                "on_error": "stop-all"
             },
             {
                 "name": "upload_to_redshift",
                 "type": "execution",
                 "template": {
-                    "environment": "01742a18-07ca-75b6-1a1f-f8cc93b058a0",
-                    "commit": "e45337bc1c59ee76715cfec9b2b6ba49b28dcb5f",
+                    "environment": "01742a18-656d-faec-4cb6-acb1d06aa5c5",
+                    "commit": "prod",
                     "step": "upload_to_redshift",
                     "image": "yotamljfrog/ds-general-image:0.1",
                     "command": "pip install -r requirements.txt\npython -c 'import main; main.upload_to_redshift('\\\"simple_intent_alltime\\\",append=\"1\"')'",
@@ -208,12 +243,21 @@ resp = requests.request(
                     "parameters": {},
                     "runtime_config": {},
                     "inherit_environment_variables": True,
+                    "environment_variable_groups": [],
+                    "tags": [
+                        "prod"
+                    ],
                     "time_limit": 0,
                     "environment_variables": {}
-                }
+                },
+                "on_error": "stop-all"
             }
         ],
         "project": "017b2460-05ed-e5b6-8849-b1090f517460",
+        "tags": [
+            "prod"
+        ],
+        "parameters": {},
         "title": "key_terms_pipeline"
     },
 )
