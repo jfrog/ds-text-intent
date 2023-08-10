@@ -37,7 +37,7 @@ trigger_terms = [['high availability', 'high-availability', ' ha ', ' ha.', ' ha
                    ['Support:', 'ESL', 'HTS'], ['Security:', 'Vulnerability Scanning', 'CVE', 'Vuln'], 
                    ['Distribution:','distribution', 'CDN', 'PDN', 'Edge', 'latency', 'bandwidth', 'network'],
                     ['cloud_provider', 'AWS', 'GCP', 'AZURE'],
-                ['MLOps','MLops', 'mlops', 'Machine Learning Operations', 'DevOps for ML', 'AutoML', 'ML Workflow Automation', 'Kubeflow', 'MLflow', 'Apache Airflow','Qwak', 'AWS SageMaker']]
+                ['MLOps', 'Machine Learning Operations', 'DevOps for ML', 'AutoML', 'ML Workflow Automation', 'Kubeflow', 'MLflow', 'Apache Airflow','Qwak', 'AWS SageMaker']]
 
 
 def send_slack_message(message):
